@@ -37,6 +37,21 @@ const BP_DEEPTIME = [
     ],
   },
   {
+    id: 'carboniferous', t: '石炭纪', ma: 340, color: '#6d8a4e',
+    brief: '巨虫时代：氧气含量史上最高（约 35%），巨型蜻蜓翼展近 1 米',
+    oxygen: '约 35%（史上最高）', co2: '降至接近今天水平', sea: '海平面波动频繁，广布浅海煤盆',
+    life: '巨型节肢动物的盛世：翼展 70 厘米的巨脉蜻蜓、体长 2.6 米的普莫诺蝎；广袤的蕨类与鳞木森林最终变成了今天的煤层',
+    continents: [
+      /* 欧美大陆（劳伦+波罗的）与冈瓦纳逐渐靠拢 */
+      [[2, -75], [16, -62], [24, -48], [20, -32], [8, -28], [-4, -38], [2, -55]],
+      [[-15, 25], [-8, 40], [0, 55], [12, 48], [16, 30], [8, 18], [-4, 14]],
+      /* 冈瓦纳（开始聚向盘古） */
+      [[-82, 30], [-68, 12], [-50, 5], [-35, 18], [-40, 45], [-58, 40], [-72, 22], [-84, 0]],
+      /* 西伯利亚 */
+      [[28, 98], [42, 106], [48, 118], [36, 114], [26, 102]],
+    ],
+  },
+  {
     id: 'permian-triassic', t: '三叠纪', ma: 230, color: '#b5926a',
     brief: '盘古大陆：所有陆地聚成一块，被一整片泛大洋包围',
     oxygen: '约 16%（二叠纪末大灭绝后缓慢恢复）', co2: '约为今天的 5 倍', sea: '海平面与今天相近',
@@ -150,4 +165,4 @@ const BP_DEEPTIME = [
 ];
 
 /* 深时按钮顺序（滑块索引） */
-const BP_DEEPTIME_ORDER = ['present', 'neogene', 'cretaceous', 'jurassic', 'permian-triassic', 'devonian', 'silurian', 'ordovician', 'cambrian'];
+const BP_DEEPTIME_ORDER = ['present', 'neogene', 'cretaceous', 'jurassic', 'permian-triassic', 'carboniferous', 'devonian', 'silurian', 'ordovician', 'cambrian'];

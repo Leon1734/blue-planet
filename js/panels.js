@@ -60,8 +60,14 @@ const BPPanels = (() => {
     $('puzzleRestart').addEventListener('click', () => BPPuzzle.restart());
     document.querySelectorAll('#puzzleModal .lab-tab').forEach(b => {
       b.addEventListener('click', () => {
-        BPPuzzle.setDifficulty(b.dataset.pd);
         document.querySelectorAll('#puzzleModal .lab-tab').forEach(x => x.classList.toggle('on', x === b));
+        if (b.dataset.pd === 'ocean') {
+          BPPuzzle.setOceanPack(true);
+          BPPuzzle.restart();
+        } else {
+          BPPuzzle.setOceanPack(false);
+          BPPuzzle.setDifficulty(b.dataset.pd);
+        }
       });
     });
     /* 巡礼站点选中 → 主程序选点 */
