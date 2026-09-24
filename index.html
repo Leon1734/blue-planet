@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="description" content="蓝色星球 BluePlanet —— 可交互 3D 地球地理知识科普：地形浮雕、地名标注、洋流粒子、地球剖析、专题巡礼、知识闯关">
+<title>蓝色星球 · BluePlanet — 地球地理科普</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/style.css?v=bp16">
+<link rel="stylesheet" href="css/modules.css?v=bp16">
+<link rel="stylesheet" href="css/v3.css?v=bp16">
+<link rel="stylesheet" href="css/v5.css?v=bp16">
+<meta name="theme-color" content="#0D1B2A">
+</head>
+<body>
+<noscript><div style="position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:#0D1B2A;color:#E8F1F8;font-size:16px;text-align:center;padding:20px">本页面需要启用 JavaScript 才能展示 3D 地球，请更换现代浏览器并开启脚本。</div></noscript>
+
+<!-- 3D 画布：全屏地球 -->
+<canvas id="scene"></canvas>
+
+<!-- 加载遮罩 -->
+<div id="loading" aria-live="polite">
+  <div class="loading-globe"><div class="loading-ring"></div><div class="loading-core"></div></div>
+  <div class="loading-title">蓝色星球</div>
+  <div class="loading-sub">正在点亮地球…</div>
+</div>
+
+<!-- 顶部栏 -->
+<header id="topbar">
+  <div class="brand">
+    <span class="brand-mark">🌍</span>
+    <span class="brand-name">蓝色星球</span>
+    <span class="brand-sub">BluePlanet · 地球地理科普</span>
+  </div>
+  <div class="clock-box" id="clockBox">
+    <div class="clock-row"><span class="clock-label">北京时间</span><b id="clockBJ">--:--:--</b></div>
+    <div class="clock-row"><span class="clock-label">UTC</span><b id="clockUTC">--:--:--</b></div>
+  </div>
+</header>
+
+<!-- 专题工具条（M3~M6 + v3） -->
+<div id="toolBar" role="toolbar" aria-label="专题工具">
+  <button id="btnCutaway" class="tool-btn" title="地球剖析：剥层看地壳、地幔、外核、内核"><span class="tool-ico">🌗</span><span class="tool-txt">剖析</span></button>
+  <button id="btnTours" class="tool-btn" title="专题巡礼：火山带 / 大陆之巅 / 极地"><span class="tool-ico">🧭</span><span class="tool-txt">巡礼</span></button>
+  <button id="btnLab" class="tool-btn" title="地理实验室：火山喷发模拟器 / 板块运动沙盘"><span class="tool-ico">🧪</span><span class="tool-txt">实验</span></button>
+  <button id="btnQuiz" class="tool-btn" title="知识闯关：10 题挑战"><span class="tool-ico">🎯</span><span class="tool-txt">闯关</span></button>
+  <button id="btnInsights" class="tool-btn" title="数据看板：气温 / CO₂ / 人口"><span class="tool-ico">📊</span><span class="tool-txt">看板</span></button>
+  <button id="btnBadges" class="tool-btn" title="我的徽章与进度"><span class="tool-ico">🏅</span><span class="tool-txt">徽章</span></button>
+  <button id="btnAssistant" class="tool-btn" title="地理小助手：离线问答"><span class="tool-ico">🤖</span><span class="tool-txt">助手</span></button>
+  <button id="btnRandom" class="tool-btn" title="随机探索：一键飞达任意地理点（快捷键 R）"><span class="tool-ico">🎲</span><span class="tool-txt">随机</span></button>
+</div>
+
+<!-- v4 随机探索菜单 -->
+<div id="randomMenu" class="hidden"></div>
+
+<!-- v3 知识搜索框（顶栏右侧） -->
+<div id="searchBox">
+  <input id="searchInput" type="text" placeholder="搜索知识点 / 地名…（按 /）" autocomplete="off" aria-label="搜索知识点与地名">
+  <div id="searchDrop" class="hidden"></div>
+</div>
+
+<!-- 左侧：八大知识模块导航（由 ui.js 生成内容） -->
+<nav id="moduleNav" aria-label="知识模块导航">
+  <div class="module-nav-head">
+    <span>知识模块</span>
+    <span class="mod-progress" id="modProgress"></span>
+    <button id="modNavToggle" class="panel-toggle" title="收起/展开模块导航">▾</button>
+  </div>
+  <ul id="moduleList"></ul>
+</nav>
+
+<!-- 右侧：图层开关 -->
+<aside id="layerPanel" aria-label="图层控制">
+  <button aria-pressed="true" class="layer-btn active" data-layer="labels" title="山川河流湖海地名标注">
+    <span class="layer-ico">🏔</span><span class="layer-txt">地名</span>
+  </button>
+  <button aria-pressed="true" class="layer-btn active" data-layer="rivers" title="世界大河流动线">
+    <span class="layer-ico">💧</span><span class="layer-txt">河流</span>
+  </button>
+  <button aria-pressed="true" class="layer-btn active" data-layer="currents" title="表层洋流粒子（暖流橙红 / 寒流冰蓝）">
+    <span class="layer-ico">🌀</span><span class="layer-txt">洋流</span>
+  </button>
+  <button aria-pressed="false" class="layer-btn" data-layer="winds" title="风带环流粒子（信风向西 / 西风向东）">
+    <span class="layer-ico">🌬</span><span class="layer-txt">风带</span>
+  </button>
+  <button aria-pressed="false" class="layer-btn" data-layer="climate" title="气候带色环（热带/温带/寒带 + 回归线极圈）">
+    <span class="layer-ico">🌡</span><span class="layer-txt">气候带</span>
+  </button>
+  <button aria-pressed="true" class="layer-btn active" data-layer="plates" title="板块边界示意（环太平洋火山带、大洋中脊等）">
+    <span class="layer-ico">🧭</span><span class="layer-txt">板块</span>
+  </button>
+  <button aria-pressed="true" class="layer-btn active" data-layer="clouds" title="云层">
+    <span class="layer-ico">☁️</span><span class="layer-txt">云层</span>
+  </button>
+  <button aria-pressed="true" class="layer-btn active" data-layer="markers" title="知识兴趣点光柱">
+    <span class="layer-ico">📍</span><span class="layer-txt">兴趣点</span>
+  </button>
+  <button aria-pressed="true" class="layer-btn active" data-layer="spin" title="地球自转">
+    <span class="layer-ico">🔄</span><span class="layer-txt">自转</span>
+  </button>
+</aside>
+
+<!-- 今日地球（v5：日期 + 地理日历 + 今日推荐 + 冷知识） -->
+<div id="factCard" aria-live="polite">
+  <div class="fact-head">📅 今日地球 <span class="today-date" id="todayDate"></span>
+    <button id="factToggle" class="panel-toggle" title="收起/展开">▾</button></div>
+  <div class="today-event" id="todayEvent"></div>
+  <div class="fact-daily" id="factDaily"></div>
+  <div class="fact-head2">💡 冷知识 <button id="factNext" class="chip-btn">换一条</button></div>
+  <div class="fact-body" id="factBody"></div>
+</div>
+
+<!-- 剖析模式控制面板 -->
+<div id="cutPanel" class="hidden">
+  <div class="cut-head">
+    <span class="cut-title">🌗 地球剖析</span>
+    <button id="cutWaves" class="chip-btn" title="演示地震波：P 波贯穿全球，S 波被液态外核阻挡">地震波</button>
+    <button id="cutExit" class="chip-btn warn">退出剖析</button>
+  </div>
+  <div class="cut-slider-row">
+    <span class="cut-slider-label">剥层</span>
+    <input type="range" id="cutSlider" min="0" max="100" value="0">
+  </div>
+  <div class="cut-legend" id="cutLegend"></div>
+</div>
+
+<!-- 圈层知识卡（剖析模式内浮动） -->
+<div id="cutInfo" class="hidden"></div>
+
+<!-- 巡礼菜单 -->
+<div id="tourMenu" class="hidden"></div>
+
+<!-- 巡礼进度条 -->
+<div id="tourBar" class="hidden">
+  <div class="tour-info">
+    <div id="tourTitle"></div>
+    <div id="tourProg"></div>
+  </div>
+  <div class="tour-actions">
+    <button id="tourPrev" class="chip-btn">‹ 上一站</button>
+    <button id="tourNext" class="chip-btn">下一站 ›</button>
+    <button id="tourExit" class="chip-btn warn">结束</button>
+  </div>
+</div>
+
+<!-- 知识闯关模态框 -->
+<div id="quizModal" class="modal hidden">
+  <div class="modal-box">
+    <div class="modal-head">🎯 知识闯关<button id="quizClose" class="card-close" title="关闭">✕</button></div>
+    <div id="quizBody"></div>
+  </div>
+</div>
+
+<!-- 数据看板模态框 -->
+<div id="insModal" class="modal hidden">
+  <div class="modal-box wide">
+    <div class="modal-head">📊 数据看板<button id="insClose" class="card-close" title="关闭">✕</button></div>
+    <div id="insBody" class="ins-body"></div>
+  </div>
+</div>
+
+<!-- 徽章模态框 -->
+<div id="badgeModal" class="modal hidden">
+  <div class="modal-box">
+    <div class="modal-head">🏅 我的徽章<button id="badgeClose" class="card-close" title="关闭">✕</button></div>
+    <div id="badgeBody"></div>
+  </div>
+</div>
+
+<!-- v3 地理小助手聊天面板 -->
+<div id="chatPanel" class="hidden">
+  <div class="chat-head">
+    <span>🤖 地理小助手</span>
+    <span class="chat-head-actions">
+      <button id="llmToggle" class="chat-gear" title="大模型设置（免费接入）">⚙️</button>
+      <button id="chatClose" class="card-close" title="收起">✕</button>
+    </span>
+  </div>
+  <div id="chatBody"></div>
+  <div id="chatSettings" class="hidden">
+    <label>服务商
+      <select id="llmProvider">
+        <option value="zhipu">智谱 GLM-4-Flash（免费）</option>
+        <option value="siliconflow">硅基流动（免费档）</option>
+        <option value="custom">自定义 OpenAI 兼容</option>
+      </select>
+    </label>
+    <label>API Key（仅存本机）<input id="llmKey" type="password" placeholder="粘贴你的免费 Key"></label>
+    <label>模型名<input id="llmModel" placeholder="留空使用默认"></label>
+    <label>自定义端点<input id="llmUrl" placeholder="https://…/chat/completions"></label>
+    <div class="chat-set-actions">
+      <button id="llmSave" class="chip-btn">保存并测试</button>
+      <span id="llmTestResult"></span>
+    </div>
+    <div class="chat-note" id="llmHint"></div>
+  </div>
+  <div class="chat-chips">
+    <button class="chat-chip">珠峰有多高？</button>
+    <button class="chat-chip">地球里面是什么？</button>
+    <button class="chat-chip">洋流怎么流动？</button>
+    <button class="chat-chip">怎么获得徽章？</button>
+  </div>
+  <div class="chat-input-row">
+    <input id="chatInput" type="text" placeholder="问我任何地理问题…" autocomplete="off">
+    <button id="chatSend" class="chip-btn">发送</button>
+  </div>
+</div>
+
+<!-- v3 地理实验室模态框 -->
+<div id="labModal" class="modal hidden">
+  <div class="modal-box wide">
+    <div class="modal-head">🧪 地理实验室
+      <span class="lab-tabs">
+        <button class="lab-tab on" data-tab="volcano">🌋 火山喷发模拟器</button>
+        <button class="lab-tab" data-tab="plate">🧱 板块运动沙盘</button>
+      </span>
+      <button id="labClose" class="card-close" title="关闭">✕</button>
+    </div>
+    <div id="labVolcano">
+      <canvas id="volcanoCanvas" width="640" height="300"></canvas>
+      <div class="lab-controls">
+        <label>岩浆黏度<input type="range" id="labVis" min="0" max="100" value="30"></label>
+        <label>气体含量<input type="range" id="labGas" min="0" max="100" value="50"></label>
+      </div>
+      <div class="lab-note">原理：黏度取决于岩浆中二氧化硅含量——玄武岩浆（黏度低）气体易逃逸，形成<b>宁静式</b>喷发（夏威夷熔岩湖）；流纹岩浆（黏度高）把气体死死憋住，一旦超过围压就<b>爆炸式</b>喷发（普林尼式），喷出几十千米高的火山灰柱。把两个滑块推到极端试试！</div>
+    </div>
+    <div id="labPlate" class="hidden">
+      <canvas id="plateCanvas" width="640" height="300"></canvas>
+      <div class="lab-controls">
+        <span class="lab-tip">直接用鼠标/手指左右拖动两块板块</span>
+      </div>
+      <div class="lab-note">原理：把 A、B 两块板块<b>相向拖动</b>——碰撞造山、隆起山脉与火山（如喜马拉雅）；<b>反向拖动</b>——张裂出裂谷，岩浆上涌（如东非大裂谷、大洋中脊）；拖动节奏不均时还会"地震"抖动。板块每年只移动几厘米，但亿万年足以重塑地球。</div>
+    </div>
+  </div>
+</div>
+
+<!-- 底部：地球 24 小时时间胶囊条 -->
+<div id="day24">
+  <div class="day24-head">
+    <span class="day24-title">⏳ 地球 24 小时</span>
+    <span class="day24-sub">46 亿年压缩成一天</span>
+    <button id="day24Toggle" class="chip-btn" aria-expanded="true">收起</button>
+  </div>
+  <div class="day24-body" id="day24Body">
+    <div class="day24-track" id="day24Track"><!-- 宙代分段 + 事件点，由 ui.js 生成 --></div>
+    <div class="day24-ticks">
+      <span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>24:00</span>
+    </div>
+  </div>
+  <div class="day24-popover hidden" id="day24Pop"></div>
+</div>
+
+<!-- 操作提示（首次进入淡出） -->
+<div id="hint">🖱 拖拽旋转 · 滚轮缩放 · 点击光柱探索知识</div>
+
+<!-- 常显地名标注层（labels.js 每帧投影） -->
+<div id="labelLayer"></div>
+
+<!-- 悬停兴趣点标签（跟随 3D 投影位置） -->
+<div id="poiLabel" class="hidden"></div>
+
+<!-- 知识卡片 -->
+<article id="poiCard" aria-live="polite">
+  <button class="card-close" id="cardClose" title="关闭">✕</button>
+  <div class="card-head">
+    <span class="card-module" id="cardModule"></span>
+    <span class="card-stars" id="cardStars" title="知识难度"></span>
+  </div>
+  <h2 class="card-title" id="cardTitle"></h2>
+  <div class="card-fig" id="cardFig"></div>
+  <div class="card-stats hidden" id="cardStats"></div>
+  <p class="card-summary" id="cardSummary"></p>
+  <div class="card-content" id="cardContent"></div>
+  <div class="card-tags" id="cardTags"></div>
+  <div class="card-foot">
+    <span class="card-coord" id="cardCoord"></span>
+    <button class="chip-btn" id="cardNext">同模块下一个 →</button>
+  </div>
+</article>
+
+<!-- 依赖顺序：库 → 内嵌贴图数据 → 知识数据 → 场景 → 标记 → UI → 主程序 -->
+<script src="js/lib/three.min.js"></script>
+<script src="js/lib/OrbitControls.js"></script>
+<script src="js/textures-data.js?v=bp16"></script>
+<script src="js/data.js?v=bp16"></script>
+<script src="js/textures.js?v=bp16"></script>
+<script src="js/scene.js?v=bp16"></script>
+<script src="js/markers.js?v=bp16"></script>
+<script src="js/labels.js?v=bp16"></script>
+<script src="js/figures.js?v=bp16"></script>
+<script src="js/layers.js?v=bp16"></script>
+<script src="js/cutaway.js?v=bp16"></script>
+<script src="js/tours.js?v=bp16"></script>
+<script src="js/game.js?v=bp16"></script>
+<script src="js/insights.js?v=bp16"></script>
+<script src="js/search.js?v=bp16"></script>
+<script src="js/assistant.js?v=bp16"></script>
+<script src="js/lab.js?v=bp16"></script>
+<script src="js/random.js?v=bp16"></script>
+<script src="js/panels.js?v=bp16"></script>
+<script src="js/ui.js?v=bp16"></script>
+<script src="js/main.js?v=bp16"></script>
+</body>
+</html>

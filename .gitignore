@@ -1,0 +1,18 @@
+# 依赖与构建产物（本项目零依赖，防御性忽略）
+node_modules/
+dist/
+build/
+
+# 日志与临时文件
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# 编辑器
+.vscode/
+.idea/
+
+# 本地密钥/配置（Key 只应存在浏览器 localStorage，防御性忽略）
+.env
+*.local

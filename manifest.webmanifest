@@ -1,0 +1,20 @@
+{
+  "name": "蓝色星球 BluePlanet — 地球地理科普",
+  "short_name": "蓝色星球",
+  "description": "可交互 3D 地球地理知识科普：地形浮雕、地名标注、洋流粒子、地球剖析、专题巡礼、知识闯关",
+  "lang": "zh-CN",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#0D1B2A",
+  "background_color": "#0D1B2A",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
