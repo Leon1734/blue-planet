@@ -1,5 +1,7 @@
 # 🌍 蓝色星球 BluePlanet — 地球地理知识科普
 
+> 仓库：https://github.com/Leon1734/blue-planet · 在线体验：双击 index.html 或任意静态服务器托管
+
 零依赖、零构建的可交互 3D 地球科普页面。双击 `index.html` 即可运行（无需服务器、无需联网）。
 
 ## 功能总览（M1）
