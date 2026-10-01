@@ -99,3 +99,42 @@
   opacity: .85;
   letter-spacing: .5px;
 }
+
+/* ---------- v6 深时古地球 ---------- */
+#dtPanel {
+  position: fixed; left: 50%; transform: translateX(-50%);
+  bottom: 96px; z-index: 26;
+  width: min(620px, calc(100vw - 32px));
+  background: var(--c-panel);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow);
+}
+.dt-epochs { display: flex; gap: 6px; flex-wrap: wrap; }
+.dt-epoch-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--c-text);
+  background: rgba(122, 178, 214, 0.08);
+  border: 1px solid var(--c-line);
+  border-radius: 999px; padding: 5px 12px;
+}
+.dt-epoch-btn i { font-style: normal; font-size: 10px; color: var(--c-text-dim); }
+.dt-epoch-btn .dot { width: 9px; height: 9px; border-radius: 50%; }
+.dt-epoch-btn:hover { border-color: rgba(61, 190, 139, .5); }
+.dt-epoch-btn.on { border-color: var(--c-green); background: rgba(61, 190, 139, .16); }
+.dt-facts {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-top: 8px;
+}
+.dt-facts span {
+  font-size: 11px; color: var(--c-text-dim);
+  background: rgba(122, 178, 214, 0.06);
+  border: 1px solid var(--c-line);
+  border-radius: 8px; padding: 3px 9px;
+}
+.dt-facts b { color: var(--c-orange); font-weight: 600; }
+@media (max-width: 860px) {
+  #dtPanel { bottom: 192px; }
+}

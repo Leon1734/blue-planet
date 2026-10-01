@@ -48,6 +48,11 @@ const BPPanels = (() => {
     BPRandom.onSelect = (poiId) => api.selectPoi(poiId);
     BPRandom.onUI = renderRandomMenu;
     BPRandom.onToast = toast;
+    /* v6 深时古地球 */
+    buildDeeptime();
+    $('btnDeeptime').addEventListener('click', toggleDeeptime);
+    $('dtExit').addEventListener('click', toggleDeeptime);
+    BPDeepTime.onEpoch = (epoch) => renderDtInfo(epoch);
     /* 巡礼站点选中 → 主程序选点 */
     BPTours.onSelect = (poiId) => { if (poiId) api.selectPoi(poiId); };
     BPTours.onUI = renderTourBar;
@@ -310,6 +315,52 @@ const BPPanels = (() => {
     const wb = $('randomWanderBtn');
     if (wb) wb.querySelector('b').textContent = BPRandom.isWandering ? '⏹ 停止漫游' : '🌀 随机漫游';
     $('btnRandom').classList.toggle('on', BPRandom.isWandering);
+  }
+
+  /* ---------- 深时古地球（v6） ---------- */
+  function buildDeeptime() {
+    const box = $('dtEpochs');
+    box.innerHTML = '';
+    for (const id of BP_DEEPTIME_ORDER) {
+      const e = BP_DEEPTIME.find(x => x.id === id);
+      const b = document.createElement('button');
+      b.className = 'dt-epoch-btn';
+      b.innerHTML = `<span class="dot" style="background:${e.color}"></span>${e.t}<i>${e.ma ? e.ma + ' Ma' : '今'}</i>`;
+      b.addEventListener('click', () => {
+        if (!BPDeepTime.isActive) enterDt();
+        BPDeepTime.setEpoch(id);
+        document.querySelectorAll('.dt-epoch-btn').forEach(x => x.classList.remove('on'));
+        b.classList.add('on');
+      });
+      box.appendChild(b);
+    }
+  }
+  function enterDt() {
+    BPDeepTime.enter('present');
+    BPUI.hidePoiLabel();
+    if (api.deselectPoi) api.deselectPoi();
+    $('dtPanel').classList.remove('hidden');
+    $('btnDeeptime').classList.add('on');
+    toast('🦕 深时地球：点上方纪元按钮，回看 5 亿年大陆漂移');
+  }
+  function toggleDeeptime() {
+    if (!BPDeepTime.isActive) enterDt();
+    else {
+      BPDeepTime.exit();
+      $('dtPanel').classList.add('hidden');
+      $('btnDeeptime').classList.remove('on');
+    }
+  }
+  function renderDtInfo(epoch) {
+    const box = $('dtInfo');
+    box.innerHTML =
+      `<div class="cut-info-title"><span class="dot" style="background:${epoch.color}"></span>${epoch.t}${epoch.ma ? `（${epoch.ma} 百万年前）` : ''}</div>` +
+      `<div class="cut-info-row">${epoch.brief}</div>` +
+      `<div class="dt-facts">` +
+      `<span>大气氧 <b>${epoch.oxygen}</b></span><span>CO₂ <b>${epoch.co2}</b></span><span>海平面 <b>${epoch.sea}</b></span>` +
+      `</div>` +
+      `<div class="cut-info-desc">${epoch.life}</div>`;
+    box.classList.remove('hidden');
   }
 
   /* ---------- 每日地球 ---------- */

@@ -7,10 +7,10 @@
 <title>蓝色星球 · BluePlanet — 地球地理科普</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="css/style.css?v=bp17">
-<link rel="stylesheet" href="css/modules.css?v=bp17">
-<link rel="stylesheet" href="css/v3.css?v=bp17">
-<link rel="stylesheet" href="css/v5.css?v=bp17">
+<link rel="stylesheet" href="css/style.css?v=bp19">
+<link rel="stylesheet" href="css/modules.css?v=bp19">
+<link rel="stylesheet" href="css/v3.css?v=bp19">
+<link rel="stylesheet" href="css/v5.css?v=bp19">
 <meta name="theme-color" content="#0D1B2A">
 </head>
 <body>
@@ -43,6 +43,7 @@
 <div id="toolBar" role="toolbar" aria-label="专题工具">
   <button id="btnCutaway" class="tool-btn" title="地球剖析：剥层看地壳、地幔、外核、内核"><span class="tool-ico">🌗</span><span class="tool-txt">剖析</span></button>
   <button id="btnTours" class="tool-btn" title="专题巡礼：火山带 / 大陆之巅 / 极地"><span class="tool-ico">🧭</span><span class="tool-txt">巡礼</span></button>
+  <button id="btnDeeptime" class="tool-btn" title="深时古地球：回看 5 亿年大陆漂移"><span class="tool-ico">🦕</span><span class="tool-txt">深时</span></button>
   <button id="btnLab" class="tool-btn" title="地理实验室：火山喷发模拟器 / 板块运动沙盘"><span class="tool-ico">🧪</span><span class="tool-txt">实验</span></button>
   <button id="btnQuiz" class="tool-btn" title="知识闯关：10 题挑战"><span class="tool-ico">🎯</span><span class="tool-txt">闯关</span></button>
   <button id="btnInsights" class="tool-btn" title="数据看板：气温 / CO₂ / 人口"><span class="tool-ico">📊</span><span class="tool-txt">看板</span></button>
@@ -53,6 +54,16 @@
 
 <!-- v4 随机探索菜单 -->
 <div id="randomMenu" class="hidden"></div>
+
+<!-- 深时古地球面板 -->
+<div id="dtPanel" class="hidden">
+  <div class="cut-head">
+    <span class="cut-title">🦕 深时地球</span>
+    <button id="dtExit" class="chip-btn warn">回到现代</button>
+  </div>
+  <div class="dt-epochs" id="dtEpochs"></div>
+  <div class="dt-info hidden" id="dtInfo"></div>
+</div>
 
 <!-- v3 知识搜索框（顶栏右侧） -->
 <div id="searchBox">
@@ -287,26 +298,28 @@
 <script src="js/lib/OrbitControls.js"></script>
 <script>
 /* N1①：http(s) 环境跳过 1.2MB 内嵌贴图（直接加载 textures/ 真实文件），file:// 才内嵌 */
-if (location.protocol === 'file:') document.write('<script src="js/textures-data.js?v=bp17"><\/script>');
+if (location.protocol === 'file:') document.write('<script src="js/textures-data.js?v=bp19"><\/script>');
 </script>
-<script src="js/data.js?v=bp17"></script>
-<script src="js/textures.js?v=bp17"></script>
-<script src="js/scene.js?v=bp17"></script>
-<script src="js/markers.js?v=bp17"></script>
-<script src="js/labels.js?v=bp17"></script>
-<script src="js/figures.js?v=bp17"></script>
-<script src="js/layers.js?v=bp17"></script>
-<script src="js/cutaway.js?v=bp17"></script>
-<script src="js/tours.js?v=bp17"></script>
-<script src="js/game.js?v=bp17"></script>
-<script src="js/insights.js?v=bp17"></script>
-<script src="js/search.js?v=bp17"></script>
-<script src="js/assistant.js?v=bp17"></script>
-<script src="js/lab.js?v=bp17"></script>
-<script src="js/random.js?v=bp17"></script>
-<script src="js/quakes.js?v=bp17"></script>
-<script src="js/panels.js?v=bp17"></script>
-<script src="js/ui.js?v=bp17"></script>
-<script src="js/main.js?v=bp17"></script>
+<script src="js/data.js?v=bp19"></script>
+<script src="js/textures.js?v=bp19"></script>
+<script src="js/scene.js?v=bp19"></script>
+<script src="js/markers.js?v=bp19"></script>
+<script src="js/labels.js?v=bp19"></script>
+<script src="js/figures.js?v=bp19"></script>
+<script src="js/layers.js?v=bp19"></script>
+<script src="js/cutaway.js?v=bp19"></script>
+<script src="js/tours.js?v=bp19"></script>
+<script src="js/game.js?v=bp19"></script>
+<script src="js/insights.js?v=bp19"></script>
+<script src="js/search.js?v=bp19"></script>
+<script src="js/assistant.js?v=bp19"></script>
+<script src="js/lab.js?v=bp19"></script>
+<script src="js/random.js?v=bp19"></script>
+<script src="js/quakes.js?v=bp19"></script>
+<script src="js/deeptime-data.js?v=bp19"></script>
+<script src="js/deeptime.js?v=bp19"></script>
+<script src="js/panels.js?v=bp19"></script>
+<script src="js/ui.js?v=bp19"></script>
+<script src="js/main.js?v=bp19"></script>
 </body>
 </html>
