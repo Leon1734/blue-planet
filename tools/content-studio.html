@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>内容工作台 · BluePlanet</title>
+<style>
+  :root { --bg:#0D1B2A; --panel:#12233a; --line:rgba(122,178,214,.22); --green:#3DBE8B; --orange:#FF9F45; --text:#E8F1F8; --dim:#9FB6C9; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:"PingFang SC","Microsoft YaHei",sans-serif; padding:24px; max-width:860px; margin:0 auto; }
+  h1 { font-size:20px; letter-spacing:2px; margin-bottom:4px; }
+  .sub { font-size:12px; color:var(--dim); margin-bottom:18px; }
+  label { display:block; font-size:12px; color:var(--dim); margin:12px 0 4px; }
+  input,select,textarea { width:100%; background:rgba(10,20,32,.7); border:1px solid var(--line); border-radius:8px; color:var(--text); font-size:13px; padding:8px 10px; font-family:inherit; }
+  textarea { min-height:64px; resize:vertical; line-height:1.6; }
+  .row { display:flex; gap:10px; } .row > * { flex:1; }
+  button { background:rgba(61,190,139,.16); border:1px solid rgba(61,190,139,.5); color:var(--green); font-size:13px; padding:8px 18px; border-radius:10px; cursor:pointer; margin-top:14px; }
+  button:hover { background:rgba(61,190,139,.3); }
+  button.warn { background:rgba(255,159,69,.12); border-color:rgba(255,159,69,.45); color:var(--orange); }
+  #preview { margin-top:16px; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px 16px; }
+  #preview h3 { font-size:16px; margin-bottom:6px; }
+  #preview .sum { color:var(--green); font-size:13px; padding:8px 10px; background:rgba(61,190,139,.08); border-left:3px solid var(--green); border-radius:0 8px 8px 0; margin-bottom:8px; }
+  #preview p { font-size:13px; line-height:1.8; margin-bottom:8px; text-align:justify; }
+  .tags span { font-size:11px; color:var(--dim); border:1px solid var(--line); border-radius:999px; padding:2px 10px; margin-right:6px; }
+  #out { margin-top:12px; width:100%; min-height:150px; font-family:Consolas,monospace; font-size:11.5px; color:#bfe3c9; }
+  .hint { font-size:11px; color:var(--dim); line-height:1.6; margin-top:8px; }
+  .ok { color:var(--green); } .bad { color:#ff8f8f; }
+</style>
+</head>
+<body>
+<h1>🛠 内容工作台</h1>
+<div class="sub">BluePlanet 知识点可视化新增工具 — 填表 → 预览 → 复制 JSON → 粘进 js/data.js 的 BP_POIS</div>
+
+<label>所属模块</label>
+<select id="fModule"></select>
+
+<label>标题 *</label>
+<input id="fTitle" placeholder="如：尼亚加拉瀑布">
+
+<div class="row">
+  <div><label>纬度 lat *（-90~90，北正）</label><input id="fLat" type="number" step="0.01" placeholder="43.08"></div>
+  <div><label>经度 lon *（-180~180，东正）</label><input id="fLon" type="number" step="0.01" placeholder="-79.07"></div>
+</div>
+
+<div class="row">
+  <div><label>难度（1 易 / 2 中 / 3 深）</label>
+    <select id="fDiff"><option value="1">1 ★</option><option value="2" selected>2 ★★</option><option value="3">3 ★★★</option></select>
+  </div>
+  <div><label>类型 kind（图标+图解）</label>
+    <select id="fKind">
+      <option value="">自动（按模块）</option>
+      <option value="mountain">mountain 山</option><option value="volcano">volcano 火山</option>
+      <option value="ocean">ocean 海洋</option><option value="river">river 河</option>
+      <option value="climate">climate 气候</option><option value="ice">ice 冰川</option>
+      <option value="human">human 工程</option><option value="geo">geo 构造</option>
+    </select>
+  </div>
+</div>
+
+<label>标签 tags（顿号分隔，3~4 个）</label>
+<input id="fTags" placeholder="瀑布、北美洲、水电">
+
+<label>一句话摘要 summary *（40 字内）</label>
+<input id="fSummary" placeholder="北美最大瀑布：每秒 3000+ 吨水砸下的自然奇观。">
+
+<label>正文段落 content *（每行一段，共 2~3 段，每段 60~120 字）</label>
+<textarea id="fContent" placeholder="第一段：它是什么、在哪里、数字事实…&#10;第二段：成因或过程机制…&#10;第三段：有趣的冷知识或人文关联…"></textarea>
+
+<button id="btnGen">生成 JSON</button>
+<button class="warn" id="btnCopy">复制到剪贴板</button>
+<button class="warn" id="btnImport">导入已有 JSON 校验</button>
+
+<div id="preview" style="display:none">
+  <h3 id="pTitle"></h3>
+  <div class="sum" id="pSum"></div>
+  <div id="pBody"></div>
+  <div class="tags" id="pTags"></div>
+  <div class="hint" id="pCheck"></div>
+</div>
+
+<textarea id="out" readonly placeholder="生成的 JSON 会出现在这里（复制后粘贴到 js/data.js 的 BP_POIS 数组末尾，注意上一行末尾补英文逗号）"></textarea>
+
+<div class="hint">✅ 粘贴后运行 <b>node tools/validate-data.js</b> 校验，或直接 push（GitHub Actions 会自动校验）。改完记得递增 index.html 的 ?v= 缓存号。</div>
+
+<script>
+  /* ---------- 模块下拉 ---------- */
+  const MODS = [
+    ['interior','地球内部'],['plates','板块与地震'],['volcano','火山'],['ocean','海洋与洋流'],
+    ['climate','大气与气候'],['landform','地貌与河流'],['polar','极地与冰川'],['human','人类与地球'],['earth','地球档案'],
+  ];
+  const KIND_BY_MOD = { interior:'geo', plates:'geo', volcano:'volcano', ocean:'ocean', climate:'climate', landform:'mountain', polar:'ice', human:'human', earth:'geo' };
+  const MOD_COLOR = { interior:'#F5A623', plates:'#EF5350', volcano:'#F4643C', ocean:'#29B6F6', climate:'#26C6A6', landform:'#9CCC5E', polar:'#7EB8E8', human:'#D98BE8', earth:'#B39DDB' };
+  const sel = document.getElementById('fModule');
+  MODS.forEach(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; sel.appendChild(o); });
+
+  const $ = id => document.getElementById(id);
+  let lastJSON = '';
+
+  function build() {
+    const title = $('fTitle').value.trim();
+    const lat = parseFloat($('fLat').value), lon = parseFloat($('fLon').value);
+    const content = $('fContent').value.split('\n').map(s => s.trim()).filter(Boolean);
+    const obj = {
+      id: 'custom-' + Date.now().toString(36),
+      module: $('fModule').value,
+      title,
+    };
+    if ($('fKind').value) obj.kind = $('fKind').value;
+    obj.lat = lat; obj.lon = lon;
+    obj.difficulty = +$('fDiff').value;
+    obj.tags = $('fTags').value.split(/[、,，]/).map(s => s.trim()).filter(Boolean);
+    obj.summary = $('fSummary').value.trim();
+    obj.content = content;
+    return obj;
+  }
+
+  function check(obj) {
+    const msgs = [];
+    if (!obj.title) msgs.push(['bad', '缺标题']);
+    if (isNaN(obj.lat) || Math.abs(obj.lat) > 90) msgs.push(['bad', '纬度非法']);
+    if (isNaN(obj.lon) || Math.abs(obj.lon) > 180) msgs.push(['bad', '经度非法']);
+    const body = obj.content.join('');
+    if (body.length < 100) msgs.push(['bad', '正文过短（<100 字）']);
+    if (body.length > 700) msgs.push(['bad', '正文过长（>700 字，建议拆分）']);
+    if (obj.summary.length > 45) msgs.push(['bad', '摘要超 45 字']);
+    if (!obj.tags.length) msgs.push(['bad', '至少 1 个标签']);
+    if (/\b(global|permanently|leftover|itself)\b/i.test(body)) msgs.push(['bad', '正文疑似英文残留']);
+    if (msgs.length === 0 && body.length >= 150) msgs.push(['ok', '校验通过，可直接粘贴']);
+    else if (msgs.length === 0) msgs.push(['ok', '基本可用（正文可再充实些）']);
+    return msgs;
+  }
+
+  $('btnGen').addEventListener('click', () => {
+    const obj = build();
+    lastJSON = JSON.stringify(obj, null, 2);
+    $('out').value = lastJSON;
+    /* 预览 */
+    const pv = $('preview'); pv.style.display = 'block';
+    $('pTitle').textContent = obj.title || '（无标题）';
+    $('pTitle').style.color = MOD_COLOR[obj.module] || '#fff';
+    $('pSum').textContent = obj.summary || '（无摘要）';
+    $('pBody').innerHTML = obj.content.map(p => `<p>${p}</p>`).join('');
+    $('pTags').innerHTML = obj.tags.map(t => `<span># ${t}</span>`).join('');
+    $('pCheck').innerHTML = check(obj).map(([c, m]) => `<div class="${c}">${c === 'ok' ? '✅' : '❌'} ${m}</div>`).join('');
+  });
+
+  $('btnCopy').addEventListener('click', async () => {
+    if (!lastJSON) { alert('先点「生成 JSON」'); return; }
+    try { await navigator.clipboard.writeText(lastJSON); alert('已复制 ✅ 粘到 js/data.js 的 BP_POIS 末尾'); }
+    catch (e) { $('out').select(); document.execCommand('copy'); alert('已复制（fallback）'); }
+  });
+
+  $('btnImport').addEventListener('click', () => {
+    try {
+      const obj = JSON.parse(prompt('粘贴一个知识点 JSON：'));
+      $('fTitle').value = obj.title || '';
+      $('fLat').value = obj.lat ?? '';
+      $('fLon').value = obj.lon ?? '';
+      $('fDiff').value = String(obj.difficulty || 2);
+      $('fKind').value = obj.kind || '';
+      $('fTags').value = (obj.tags || []).join('、');
+      $('fSummary').value = obj.summary || '';
+      $('fContent').value = (obj.content || []).join('\n');
+      if (obj.module) $('fModule').value = obj.module;
+      $('btnGen').click();
+    } catch (e) { alert('JSON 解析失败：' + e.message); }
+  });
+</script>
+</body>
+</html>

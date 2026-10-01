@@ -1,0 +1,20 @@
+name: validate-content
+
+on:
+  push:
+    branches: [main]
+    paths: ['js/data.js', 'js/deeptime-data.js', 'tools/validate-data.js']
+  pull_request:
+    paths: ['js/data.js', 'js/deeptime-data.js']
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: 校验知识内容
+        run: node tools/validate-data.js
