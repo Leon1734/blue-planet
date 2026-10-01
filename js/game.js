@@ -33,6 +33,7 @@ const BPGame = (() => {
     list.push({ id: 'quiz10', icon: '🏆', t: '闯关大师', d: '知识闯关 10 题全对' });
     list.push({ id: 'random20', icon: '🎲', t: '探险家', d: '随机探索 20 个不同知识点' });
     list.push({ id: 'random50', icon: '🛸', t: '随机大师', d: '随机探索累计 50 次' });
+    list.push({ id: 'puzzle', icon: '🧩', t: '拼图达人', d: '完成一次大陆拼图' });
     return list;
   };
   function iconOf(mid) {
@@ -62,6 +63,16 @@ const BPGame = (() => {
     const grant = (id) => { if (!earned(id)) { profile.badges.push(id); fresh.push(id); } };
     if (score >= Math.ceil(total * 0.6)) grant('quiz60');
     if (score === total) grant('quiz10');
+    save();
+    return fresh;
+  }
+
+  /* 大陆拼图完成 → 拼图达人徽章 */
+  function markPuzzle() {
+    const fresh = [];
+    const grant = (id) => { if (!earned(id)) { profile.badges.push(id); fresh.push(id); } };
+    profile.puzzleWins = (profile.puzzleWins || 0) + 1;
+    grant('puzzle');
     save();
     return fresh;
   }
@@ -116,7 +127,7 @@ const BPGame = (() => {
   }
 
   return {
-    load, markVisited, markQuiz, markRandom, dailyPoi, startQuiz, answerQuiz, nextQuiz,
+    load, markVisited, markQuiz, markRandom, markPuzzle, dailyPoi, startQuiz, answerQuiz, nextQuiz,
     get profile() { return profile; },
     get badges() { return badgeDef(); },
     get quizState() { return quiz; },

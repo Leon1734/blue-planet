@@ -7,10 +7,10 @@
 <title>蓝色星球 · BluePlanet — 地球地理科普</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="css/style.css?v=bp19">
-<link rel="stylesheet" href="css/modules.css?v=bp19">
-<link rel="stylesheet" href="css/v3.css?v=bp19">
-<link rel="stylesheet" href="css/v5.css?v=bp19">
+<link rel="stylesheet" href="css/style.css?v=bp22">
+<link rel="stylesheet" href="css/modules.css?v=bp22">
+<link rel="stylesheet" href="css/v3.css?v=bp22">
+<link rel="stylesheet" href="css/v5.css?v=bp22">
 <meta name="theme-color" content="#0D1B2A">
 </head>
 <body>
@@ -44,6 +44,7 @@
   <button id="btnCutaway" class="tool-btn" title="地球剖析：剥层看地壳、地幔、外核、内核"><span class="tool-ico">🌗</span><span class="tool-txt">剖析</span></button>
   <button id="btnTours" class="tool-btn" title="专题巡礼：火山带 / 大陆之巅 / 极地"><span class="tool-ico">🧭</span><span class="tool-txt">巡礼</span></button>
   <button id="btnDeeptime" class="tool-btn" title="深时古地球：回看 5 亿年大陆漂移"><span class="tool-ico">🦕</span><span class="tool-txt">深时</span></button>
+  <button id="btnPuzzle" class="tool-btn" title="大陆拼图：把大洲拖回正确位置"><span class="tool-ico">🧩</span><span class="tool-txt">拼图</span></button>
   <button id="btnLab" class="tool-btn" title="地理实验室：火山喷发模拟器 / 板块运动沙盘"><span class="tool-ico">🧪</span><span class="tool-txt">实验</span></button>
   <button id="btnQuiz" class="tool-btn" title="知识闯关：10 题挑战"><span class="tool-ico">🎯</span><span class="tool-txt">闯关</span></button>
   <button id="btnInsights" class="tool-btn" title="数据看板：气温 / CO₂ / 人口"><span class="tool-ico">📊</span><span class="tool-txt">看板</span></button>
@@ -182,6 +183,23 @@
   </div>
 </div>
 
+<!-- v7 大陆拼图 -->
+<div id="puzzleModal" class="modal hidden">
+  <div class="modal-box wide">
+    <div class="modal-head">🧩 大陆拼图
+      <span class="lab-tabs">
+        <button class="lab-tab" data-pd="easy">简单</button>
+        <button class="lab-tab on" data-pd="normal">标准</button>
+        <button class="lab-tab" data-pd="hard">困难</button>
+      </span>
+      <button id="puzzleRestart" class="chip-btn">重开</button>
+      <button id="puzzleClose" class="card-close" title="关闭">✕</button>
+    </div>
+    <canvas id="puzzleCanvas" width="1000" height="720"></canvas>
+    <div class="lab-note">玩法：把托盘里散落的大陆拼片拖到世界地图上正确的位置——中心对准即自动吸附。完成一局解锁 🧩 徽章，最佳成绩保存在本机。简单模式有虚线提示，困难模式可就看你的地理功力了！</div>
+  </div>
+</div>
+
 <!-- v3 地理小助手聊天面板 -->
 <div id="chatPanel" class="hidden">
   <div class="chat-head">
@@ -298,28 +316,29 @@
 <script src="js/lib/OrbitControls.js"></script>
 <script>
 /* N1①：http(s) 环境跳过 1.2MB 内嵌贴图（直接加载 textures/ 真实文件），file:// 才内嵌 */
-if (location.protocol === 'file:') document.write('<script src="js/textures-data.js?v=bp19"><\/script>');
+if (location.protocol === 'file:') document.write('<script src="js/textures-data.js?v=bp22"><\/script>');
 </script>
-<script src="js/data.js?v=bp19"></script>
-<script src="js/textures.js?v=bp19"></script>
-<script src="js/scene.js?v=bp19"></script>
-<script src="js/markers.js?v=bp19"></script>
-<script src="js/labels.js?v=bp19"></script>
-<script src="js/figures.js?v=bp19"></script>
-<script src="js/layers.js?v=bp19"></script>
-<script src="js/cutaway.js?v=bp19"></script>
-<script src="js/tours.js?v=bp19"></script>
-<script src="js/game.js?v=bp19"></script>
-<script src="js/insights.js?v=bp19"></script>
-<script src="js/search.js?v=bp19"></script>
-<script src="js/assistant.js?v=bp19"></script>
-<script src="js/lab.js?v=bp19"></script>
-<script src="js/random.js?v=bp19"></script>
-<script src="js/quakes.js?v=bp19"></script>
-<script src="js/deeptime-data.js?v=bp19"></script>
-<script src="js/deeptime.js?v=bp19"></script>
-<script src="js/panels.js?v=bp19"></script>
-<script src="js/ui.js?v=bp19"></script>
-<script src="js/main.js?v=bp19"></script>
+<script src="js/data.js?v=bp22"></script>
+<script src="js/textures.js?v=bp22"></script>
+<script src="js/scene.js?v=bp22"></script>
+<script src="js/markers.js?v=bp22"></script>
+<script src="js/labels.js?v=bp22"></script>
+<script src="js/figures.js?v=bp22"></script>
+<script src="js/layers.js?v=bp22"></script>
+<script src="js/cutaway.js?v=bp22"></script>
+<script src="js/tours.js?v=bp22"></script>
+<script src="js/game.js?v=bp22"></script>
+<script src="js/insights.js?v=bp22"></script>
+<script src="js/search.js?v=bp22"></script>
+<script src="js/assistant.js?v=bp22"></script>
+<script src="js/lab.js?v=bp22"></script>
+<script src="js/random.js?v=bp22"></script>
+<script src="js/quakes.js?v=bp22"></script>
+<script src="js/deeptime-data.js?v=bp22"></script>
+<script src="js/deeptime.js?v=bp22"></script>
+<script src="js/puzzle.js?v=bp22"></script>
+<script src="js/panels.js?v=bp22"></script>
+<script src="js/ui.js?v=bp22"></script>
+<script src="js/main.js?v=bp22"></script>
 </body>
 </html>

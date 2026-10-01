@@ -53,6 +53,16 @@ const BPPanels = (() => {
     $('btnDeeptime').addEventListener('click', toggleDeeptime);
     $('dtExit').addEventListener('click', toggleDeeptime);
     BPDeepTime.onEpoch = (epoch) => renderDtInfo(epoch);
+    /* v7 大陆拼图 */
+    $('btnPuzzle').addEventListener('click', () => BPPuzzle.open());
+    $('puzzleClose').addEventListener('click', () => BPPuzzle.close());
+    $('puzzleRestart').addEventListener('click', () => BPPuzzle.restart());
+    document.querySelectorAll('#puzzleModal .lab-tab').forEach(b => {
+      b.addEventListener('click', () => {
+        BPPuzzle.setDifficulty(b.dataset.pd);
+        document.querySelectorAll('#puzzleModal .lab-tab').forEach(x => x.classList.toggle('on', x === b));
+      });
+    });
     /* 巡礼站点选中 → 主程序选点 */
     BPTours.onSelect = (poiId) => { if (poiId) api.selectPoi(poiId); };
     BPTours.onUI = renderTourBar;
@@ -248,6 +258,7 @@ const BPPanels = (() => {
   /* ---------- 模态框 ---------- */
   function closeModal() {
     document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
+    if (typeof BPPuzzle !== 'undefined' && BPPuzzle.isOpen) BPPuzzle.close();
   }
   function wireModals() {
     $('quizClose').addEventListener('click', closeModal);

@@ -138,3 +138,14 @@
 @media (max-width: 860px) {
   #dtPanel { bottom: 192px; }
 }
+
+
+/* ---------- v7 大陆拼图 ---------- */
+#puzzleCanvas {
+  width: 100%;
+  display: block;
+  border-radius: 12px;
+  border: 1px solid var(--c-line);
+  touch-action: none;
+  background: #0a1420;
+}
