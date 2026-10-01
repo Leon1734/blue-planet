@@ -83,7 +83,7 @@ const BPLayers = (() => {
     }
   }
 
-  /* ---------- 洋流层：粒子沿流路游动 ---------- */
+  /* ---------- 洋流层：粒子沿流路游动（v6：Catmull-Rom 平滑 + 速度按河宽渐变） ---------- */
   function samplePath(path, s) {
     const d = s * path.total;
     const cum = path.cum;
@@ -95,9 +95,17 @@ const BPLayers = (() => {
   }
 
   function buildCurrents(group) {
-    const PER = 42;   // 每条流路粒子数
+    const PER = 64;   // v6：每条流路粒子数 42→64
     for (const c of BP_CURRENTS) {
-      const pts3 = groundLine(c.pts, 0.5);
+      let pts3;
+      if (typeof THREE.CatmullRomCurve3 === 'function') {
+        // 真实洋流路径平滑：折线 → Catmull-Rom 样条，粒子不再折角突兀
+        const ctrl = groundLine(c.pts, 0.5);
+        const curve = new THREE.CatmullRomCurve3(ctrl, false, 'catmullrom', 0.4);
+        pts3 = curve.getPoints(Math.max(60, ctrl.length * 8));
+      } else {
+        pts3 = groundLine(c.pts, 0.5);
+      }
       const cum = [0];
       for (let i = 1; i < pts3.length; i++) cum.push(cum[i - 1] + pts3[i].distanceTo(pts3[i - 1]));
       currentPaths.push({ pts3, cum, total: cum[cum.length - 1] });
@@ -116,7 +124,9 @@ const BPLayers = (() => {
       for (let j = 0; j < PER; j++, k++) {
         col[k * 3] = tmp.r; col[k * 3 + 1] = tmp.g; col[k * 3 + 2] = tmp.b;
         offs[k] = j / PER;
-        speeds[k] = 0.028 + Math.random() * 0.012;   // 归一化流路速度
+        // 湾流/黑潮（前两条暖流）流速更快；粒子自身带随机扰动
+        const base = BP_CURRENTS[p].warm && p < 2 ? 0.042 : 0.028;
+        speeds[k] = base + Math.random() * 0.012;
       }
     }
     currentGeo = new THREE.BufferGeometry();

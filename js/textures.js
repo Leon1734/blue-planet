@@ -85,12 +85,25 @@ const BPTextures = (() => {
     sampleHeight,
     /* 惰性取光晕贴图（供 cutaway 等模块的 Sprite 用） */
     glowDotTex: () => (cache ? cache.glowDot : null),
-    /* 全部贴图一次性加载（成功后回调 textures 对象） */
+    /* 全部贴图一次性加载（成功后回调 textures 对象）
+       N1①：http(s) 环境直接加载 textures/ 真实文件（首屏省 ~1.2MB 内嵌解析）；
+             file:// 无跨域加载能力，回落 base64 内嵌数据（BP_TEXTURE_DATA） */
     load() {
       if (cache) return Promise.resolve(cache);
       const D = (typeof BP_TEXTURE_DATA !== 'undefined') ? BP_TEXTURE_DATA : null;
       const fail = (k) => Promise.reject(new Error('缺少 ' + k + ' 贴图'));
-      const jobs = [
+      const ONLINE = location.protocol === 'http:' || location.protocol === 'https:';
+      const texLoader = new THREE.TextureLoader();
+      const fromURL = (rel, configure, optional) => new Promise((resolve, reject) => {
+        texLoader.load(rel, (t) => { if (configure) configure(t); resolve(t); },
+          undefined, () => (optional ? resolve(null) : reject(new Error('在线贴图加载失败 ' + rel))));
+      });
+      const jobs = ONLINE ? [
+        fromURL('textures/earth_day.jpg', t => { t.anisotropy = 4; }),
+        fromURL('textures/earth_night.png'),
+        fromURL('textures/earth_clouds.png', t => { t.wrapS = THREE.RepeatWrapping; }),
+        fromURL('textures/earth_topo.jpg', t => { t.anisotropy = 8; }, true),
+      ] : [
         D ? fromDataURI(D.day, t => { t.anisotropy = 4; }) : fail('day'),
         D ? fromDataURI(D.night) : fail('night'),
         D ? fromDataURI(D.clouds, t => { t.wrapS = THREE.RepeatWrapping; }) : fail('clouds'),
@@ -104,6 +117,7 @@ const BPTextures = (() => {
           earthClouds: clouds,
           earthTopo: topo,
           sampleHeight,
+          glowDotTex: () => (cache ? cache.glowDot : null),
           glowDot: makeGlowDot(64, 'rgba(255,255,255,1)', 'rgba(180,220,255,0.55)'),
           starFlare: makeStarFlare(),
         };

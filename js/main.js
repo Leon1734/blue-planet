@@ -252,6 +252,7 @@
         BPMarkers.build(tex);
         BPLabels.build();
         BPLayers.build(tex);
+        BPEarthquakes.init();   // v6：实时地震（USGS，失败自动离线降级）
         BPPanels.init({
           selectPoi,
           deselectPoi,
