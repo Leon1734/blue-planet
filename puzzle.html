@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大陆拼图 · 蓝色星球</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+  :root { --bg:#0D1B2A; --panel:#12233a; --line:rgba(122,178,214,.22); --green:#3DBE8B; --orange:#FF9F45; --text:#E8F1F8; --dim:#9FB6C9; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:"PingFang SC","Microsoft YaHei",sans-serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:14px 12px 20px; }
+  header { width:min(1040px,100%); display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  h1 { font-size:20px; letter-spacing:2px; }
+  h1 a { color:var(--text); text-decoration:none; }
+  h1 .sub { font-size:12px; color:var(--dim); font-weight:400; letter-spacing:0; margin-left:8px; }
+  .home-link { font-size:13px; color:var(--green); text-decoration:none; border:1px solid rgba(61,190,139,.45); border-radius:999px; padding:5px 14px; }
+  .home-link:hover { background:rgba(61,190,139,.14); }
+  #wrap { width:min(1040px,100%); }
+  canvas { width:100%; display:block; border-radius:12px; border:1px solid var(--line); touch-action:none; background:#0a1420; }
+  .row { display:flex; gap:8px; margin:10px 0 0; flex-wrap:wrap; justify-content:center; }
+  .tab, .btn { font-size:13px; color:var(--text); background:var(--panel); border:1px solid var(--line); border-radius:999px; padding:6px 16px; cursor:pointer; }
+  .tab.on { color:var(--green); border-color:rgba(61,190,139,.55); background:rgba(61,190,139,.12); }
+  .btn { color:var(--orange); border-color:rgba(255,159,69,.45); background:rgba(255,159,69,.1); }
+  .tip { font-size:12px; color:var(--dim); margin-top:10px; text-align:center; line-height:1.7; }
+  #toast { position:fixed; top:16px; left:50%; transform:translateX(-50%); background:rgba(10,20,32,.92); border:1px solid rgba(255,159,69,.45); color:#ffd9ae; border-radius:999px; padding:8px 20px; font-size:13px; opacity:0; pointer-events:none; transition:opacity .3s; z-index:10; }
+  #toast.show { opacity:1; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🧩 大陆拼图<span class="sub">蓝色星球 · 地理小游戏</span></h1>
+  <a class="home-link" href="./">🌍 回到 3D 地球</a>
+</header>
+<div id="wrap"><canvas id="puzzleCanvas" width="1000" height="720"></canvas></div>
+<div class="row" id="diffRow">
+  <button class="tab" data-pd="easy">简单（有提示）</button>
+  <button class="tab on" data-pd="normal">标准</button>
+  <button class="tab" data-pd="hard">困难</button>
+  <button class="btn" id="btnRestart">↺ 重开一局</button>
+</div>
+<div class="tip">把托盘里的大陆拼片拖到世界地图正确的位置，中心对准即自动吸附。拼图是认识世界地图形状的最好方式——试试不看提示能多快完成！</div>
+<div id="toast"></div>
+
+<script>
+if (location.protocol === 'file:') document.write('<script src="js/textures-data.js?v=bp25"><\/script>');
+</script>
+<script src="js/data.js?v=bp25"></script>
+<script src="js/puzzle.js?v=bp25"></script>
+<script src="js/puzzle-page.js?v=bp25"></script>
+</body>
+</html>

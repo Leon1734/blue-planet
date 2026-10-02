@@ -57,7 +57,7 @@ const BPAssistant = (() => {
   };
 
   /* ---------- 大模型配置 ---------- */
-  let llm = { provider: 'zhipu', key: '', model: '', url: '' };
+  let llm = { provider: 'zhipu', key: '', model: '', url: '', imgOn: false };
   function loadLlm() {
     try {
       const raw = localStorage.getItem(LLM_KEY);
@@ -177,6 +177,30 @@ const BPAssistant = (() => {
     }, 20);
   }
 
+  /* v8 实验开关：智谱 CogView-3-Flash 免费生图（仅 zhipu provider 且开关开启） */
+  async function genImage(prompt, bubbleDiv) {
+    if (!llm.imgOn || llm.provider !== 'zhipu' || !llm.key) return;
+    try {
+      const resp = await fetch('https://open.bigmodel.cn/api/paas/v4/images/generations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + llm.key },
+        body: JSON.stringify({ model: 'cogview-3-flash', prompt: prompt.slice(0, 200), size: '512x512' }),
+      });
+      if (!resp.ok) return;
+      const j = await resp.json();
+      const url = j.data && j.data[0] && j.data[0].url;
+      if (!url) return;
+      const img = document.createElement('img');
+      img.className = 'chat-img';
+      img.src = url;
+      img.alt = 'AI 配图';
+      img.loading = 'lazy';
+      bubbleDiv.appendChild(document.createElement('br'));
+      bubbleDiv.appendChild(img);
+      $('chatBody').scrollTop = $('chatBody').scrollHeight;
+    } catch (e) { /* 静默：生图是彩蛋不是依赖 */ }
+  }
+
   function tagSource(div, source) {
     const tag = document.createElement('span');
     tag.className = 'chat-src';
@@ -227,7 +251,12 @@ const BPAssistant = (() => {
       busy = true;
       const bubble = addBubble('bot', '<i style="opacity:.6">连接大模型…</i>');
       svc.reply(q, (acc) => { bubble.textContent = acc; $('chatBody').scrollTop = $('chatBody').scrollHeight; })
-        .then(() => { tagSource(bubble, '✨ ' + llmModel()); busy = false; $('chatBody').scrollTop = $('chatBody').scrollHeight; })
+        .then(() => {
+          tagSource(bubble, '✨ ' + llmModel());
+          busy = false;
+          $('chatBody').scrollTop = $('chatBody').scrollHeight;
+          genImage(q, bubble);   // v8 实验：AI 配图（失败静默）
+        })
         .catch((e) => {
           bubble.remove();
           const r = localService.reply(q);
@@ -248,6 +277,7 @@ const BPAssistant = (() => {
     $('llmKey').value = llm.key;
     $('llmModel').value = llm.model;
     $('llmUrl').value = llm.url || '';
+    $('llmImg').checked = !!llm.imgOn;
     $('llmHint').textContent = (LLM_PROVIDERS[llm.provider] || {}).hint || '';
   }
   function wireSettings() {
@@ -256,6 +286,7 @@ const BPAssistant = (() => {
     $('llmKey').addEventListener('input', () => llm.key = $('llmKey').value.trim());
     $('llmModel').addEventListener('input', () => llm.model = $('llmModel').value.trim());
     $('llmUrl').addEventListener('input', () => llm.url = $('llmUrl').value.trim());
+    $('llmImg').addEventListener('change', () => llm.imgOn = $('llmImg').checked);
     $('llmSave').addEventListener('click', async () => {
       saveLlm();
       const res = $('llmTestResult');

@@ -7,10 +7,10 @@
 <title>蓝色星球 · BluePlanet — 地球地理科普</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="css/style.css?v=bp22">
-<link rel="stylesheet" href="css/modules.css?v=bp22">
-<link rel="stylesheet" href="css/v3.css?v=bp22">
-<link rel="stylesheet" href="css/v5.css?v=bp22">
+<link rel="stylesheet" href="css/style.css?v=bp25">
+<link rel="stylesheet" href="css/modules.css?v=bp25">
+<link rel="stylesheet" href="css/v3.css?v=bp25">
+<link rel="stylesheet" href="css/v5.css?v=bp25">
 <meta name="theme-color" content="#0D1B2A">
 </head>
 <body>
@@ -35,7 +35,8 @@
   </div>
   <div class="clock-box" id="clockBox">
     <div class="clock-row"><span class="clock-label">北京时间</span><b id="clockBJ">--:--:--</b></div>
-    <div class="clock-row"><span class="clock-label">UTC</span><b id="clockUTC">--:--:--</b></div>
+    <div class="clock-row"><span class="clock-label">UTC</span><b id="clockUTC">--:--:--</b>
+      <button id="btnLang" class="panel-toggle" style="font-size:11px;padding:1px 8px;font-weight:600">EN</button></div>
   </div>
 </header>
 
@@ -196,7 +197,8 @@
       <button id="puzzleClose" class="card-close" title="关闭">✕</button>
     </div>
     <canvas id="puzzleCanvas" width="1000" height="720"></canvas>
-    <div class="lab-note">玩法：把托盘里散落的大陆拼片拖到世界地图上正确的位置——中心对准即自动吸附。完成一局解锁 🧩 徽章，最佳成绩保存在本机。简单模式有虚线提示，困难模式可就看你的地理功力了！</div>
+    <div class="lab-note">玩法：把托盘里散落的大陆拼片拖到世界地图上正确的位置——中心对准即自动吸附。完成一局解锁 🧩 徽章，最佳成绩保存在本机。简单模式有虚线提示，困难模式可就看你的地理功力了！
+      <a href="puzzle.html" target="_blank" style="color:var(--green);font-weight:600">🧩 独立全屏版（适合分享给孩子）↗</a></div>
   </div>
 </div>
 
@@ -221,6 +223,8 @@
     <label>API Key（仅存本机）<input id="llmKey" type="password" placeholder="粘贴你的免费 Key"></label>
     <label>模型名<input id="llmModel" placeholder="留空使用默认"></label>
     <label>自定义端点<input id="llmUrl" placeholder="https://…/chat/completions"></label>
+    <label style="flex-direction:row;align-items:center;gap:8px"><input id="llmImg" type="checkbox" style="width:auto">
+      <span>实验：回答时 AI 生成配图（仅智谱，CogView-3-Flash 免费）</span></label>
     <div class="chat-set-actions">
       <button id="llmSave" class="chip-btn">保存并测试</button>
       <span id="llmTestResult"></span>
@@ -316,29 +320,30 @@
 <script src="js/lib/OrbitControls.js"></script>
 <script>
 /* N1①：http(s) 环境跳过 1.2MB 内嵌贴图（直接加载 textures/ 真实文件），file:// 才内嵌 */
-if (location.protocol === 'file:') document.write('<script src="js/textures-data.js?v=bp22"><\/script>');
+if (location.protocol === 'file:') document.write('<script src="js/textures-data.js?v=bp25"><\/script>');
 </script>
-<script src="js/data.js?v=bp22"></script>
-<script src="js/textures.js?v=bp22"></script>
-<script src="js/scene.js?v=bp22"></script>
-<script src="js/markers.js?v=bp22"></script>
-<script src="js/labels.js?v=bp22"></script>
-<script src="js/figures.js?v=bp22"></script>
-<script src="js/layers.js?v=bp22"></script>
-<script src="js/cutaway.js?v=bp22"></script>
-<script src="js/tours.js?v=bp22"></script>
-<script src="js/game.js?v=bp22"></script>
-<script src="js/insights.js?v=bp22"></script>
-<script src="js/search.js?v=bp22"></script>
-<script src="js/assistant.js?v=bp22"></script>
-<script src="js/lab.js?v=bp22"></script>
-<script src="js/random.js?v=bp22"></script>
-<script src="js/quakes.js?v=bp22"></script>
-<script src="js/deeptime-data.js?v=bp22"></script>
-<script src="js/deeptime.js?v=bp22"></script>
-<script src="js/puzzle.js?v=bp22"></script>
-<script src="js/panels.js?v=bp22"></script>
-<script src="js/ui.js?v=bp22"></script>
-<script src="js/main.js?v=bp22"></script>
+<script src="js/data.js?v=bp25"></script>
+<script src="js/textures.js?v=bp25"></script>
+<script src="js/scene.js?v=bp25"></script>
+<script src="js/markers.js?v=bp25"></script>
+<script src="js/labels.js?v=bp25"></script>
+<script src="js/figures.js?v=bp25"></script>
+<script src="js/layers.js?v=bp25"></script>
+<script src="js/cutaway.js?v=bp25"></script>
+<script src="js/tours.js?v=bp25"></script>
+<script src="js/game.js?v=bp25"></script>
+<script src="js/insights.js?v=bp25"></script>
+<script src="js/search.js?v=bp25"></script>
+<script src="js/assistant.js?v=bp25"></script>
+<script src="js/lab.js?v=bp25"></script>
+<script src="js/random.js?v=bp25"></script>
+<script src="js/quakes.js?v=bp25"></script>
+<script src="js/deeptime-data.js?v=bp25"></script>
+<script src="js/deeptime.js?v=bp25"></script>
+<script src="js/puzzle.js?v=bp25"></script>
+<script src="js/panels.js?v=bp25"></script>
+<script src="js/i18n.js?v=bp25"></script>
+<script src="js/ui.js?v=bp25"></script>
+<script src="js/main.js?v=bp25"></script>
 </body>
 </html>

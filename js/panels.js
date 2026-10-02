@@ -364,14 +364,22 @@ const BPPanels = (() => {
   }
   function renderDtInfo(epoch) {
     const box = $('dtInfo');
+    const poiId = 'epoch-' + epoch.id;
+    const hasPoi = typeof BP_POIS !== 'undefined' && BP_POIS.some(p => p.id === poiId);
     box.innerHTML =
       `<div class="cut-info-title"><span class="dot" style="background:${epoch.color}"></span>${epoch.t}${epoch.ma ? `（${epoch.ma} 百万年前）` : ''}</div>` +
       `<div class="cut-info-row">${epoch.brief}</div>` +
       `<div class="dt-facts">` +
       `<span>大气氧 <b>${epoch.oxygen}</b></span><span>CO₂ <b>${epoch.co2}</b></span><span>海平面 <b>${epoch.sea}</b></span>` +
       `</div>` +
-      `<div class="cut-info-desc">${epoch.life}</div>`;
+      `<div class="cut-info-desc">${epoch.life}</div>` +
+      (hasPoi ? `<button class="today-jump" id="dtJump">📍 看这个时代的百科条目 →</button>` : '');
     box.classList.remove('hidden');
+    const jb = $('dtJump');
+    if (jb) jb.addEventListener('click', () => {
+      toggleDeeptime();                      // 先退出深时回现代地球
+      if (api.selectPoi) api.selectPoi(poiId);
+    });
   }
 
   /* ---------- 每日地球 ---------- */

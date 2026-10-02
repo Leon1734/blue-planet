@@ -243,6 +243,7 @@
     const canvas = document.getElementById('scene');
     BPGame.load();          // 先载档案：标记的金环需要已访问列表
     BPUI.init();
+    BPi18n.init();          // v8 双语 chrome
     bindUI();
     registerSW();
 

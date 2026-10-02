@@ -122,7 +122,8 @@ const BPPuzzle = (() => {
 
   /* ---------- 打开/关闭 ---------- */
   function openModal() {
-    $('puzzleModal').classList.remove('hidden');
+    const modal = $('puzzleModal');
+    if (modal) modal.classList.remove('hidden');   // 独立分享页无模态壳，直接画布
     open = true;
     init().then(() => {
       layout();
@@ -133,7 +134,8 @@ const BPPuzzle = (() => {
     });
   }
   function close() {
-    $('puzzleModal').classList.add('hidden');
+    const modal = $('puzzleModal');
+    if (modal) modal.classList.add('hidden');
     open = false;
     cancelAnimationFrame(raf);
   }
