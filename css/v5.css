@@ -149,3 +149,15 @@
   touch-action: none;
   background: #0a1420;
 }
+
+/* ---------- v9 卡片相关冷知识 ---------- */
+.card-fact {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--c-orange);
+  background: rgba(255, 159, 69, 0.07);
+  border-left: 3px solid var(--c-orange);
+  border-radius: 0 8px 8px 0;
+  padding: 8px 11px;
+  margin: 10px 0 4px;
+}

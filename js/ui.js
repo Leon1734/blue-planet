@@ -114,6 +114,13 @@ const BPUI = (() => {
       box.appendChild(p);
     });
     $('cardTags').innerHTML = poi.tags.map(t => `<span># ${t}</span>`).join('');
+    /* v9 相关冷知识：BP_FACTS 中关联本知识点的条目 */
+    const factBox = $('cardFact');
+    if (factBox) {
+      const rel = (typeof BP_FACTS !== 'undefined') && BP_FACTS.find(f => typeof f === 'object' && f.poi === poi.id);
+      factBox.classList.toggle('hidden', !rel);
+      if (rel) factBox.textContent = '💡 ' + rel.t;
+    }
     const latStr = `${Math.abs(poi.lat).toFixed(1)}°${poi.lat >= 0 ? 'N' : 'S'}`;
     const lonStr = `${Math.abs(poi.lon).toFixed(1)}°${poi.lon >= 0 ? 'E' : 'W'}`;
     $('cardCoord').textContent = `${latStr}, ${lonStr}`;
