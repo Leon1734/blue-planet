@@ -14,6 +14,7 @@ const BPDeepTime = (() => {
   let group = null;         // 深时组（含古地球球+大陆 mesh）
   let globeMat = null;
   let contGroup = null;
+  let contGroups = [];   // 历史纪元大陆组（交叉淡化用）
   let savedSpin = true;
 
   const R = () => BPScene.R;
@@ -37,6 +38,13 @@ const BPDeepTime = (() => {
     );
     group.add(rim);
     BPScene.scene.add(group);
+  }
+
+  /* 多边形质心 */
+  function centroidOf(poly) {
+    let la = 0, lo = 0;
+    poly.forEach(([a, o]) => { la += a; lo += o; });
+    return [la / poly.length, lo / poly.length];
   }
 
   /* 大陆多边形 → 球面填充（canvas 2D 栅格化：fill 处理自交/环绕，逐像素贴球面） */
@@ -104,10 +112,17 @@ const BPDeepTime = (() => {
       new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.4 })
     );
     group.add(edge);
+    group.userData.centroid = centroidOf(poly);
+    group.userData.origPoly = poly;
+    group.userData.fromPos = group.position.clone();
+    group.userData.toPos = group.position.clone();
     return group;
   }
 
-  /* ---------- 纪元切换（淡入淡出） ---------- */
+
+
+  /* ---------- 纪元切换（交叉淡化；v10 支持平滑过渡动画） ---------- */
+  let fadeList = [];   // { obj, mats, from, to, dur, t, onDone }
   function setEpoch(id, animateMs) {
     const idx = BP_DEEPTIME.findIndex(e => e.id === id);
     if (idx < 0) return;
@@ -115,20 +130,66 @@ const BPDeepTime = (() => {
     current = id;
     if (!group) build();
 
-    /* 重建大陆 */
-    contGroup.clear();
-    for (const poly of epoch.continents) {
-      contGroup.add(buildContinent(poly, epoch.color, 0.94));   // 已含描边
-    }
-    globeMat.color.set(mixOcean(epoch.color));
+    const newGroup = buildEpochGroup(epoch);
+    group.add(newGroup);
+    contGroups.push(newGroup);
+    const oldGroup = contGroup;
+    contGroup = newGroup;
 
+    const dur = animateMs || 0;
+    if (dur && oldGroup && oldGroup !== newGroup) {
+      /* 新组 0→0.94，旧组 0.94→0 后移除 */
+      setGroupOpacity(newGroup, 0);
+      fadeList.push({ g: newGroup, from: 0, to: 0.94, t: 0, dur });
+      fadeList.push({ g: oldGroup, from: 0.94, to: 0, t: 0, dur, remove: true });
+    }
+
+    globeMat.color.set(mixOcean(epoch.color));
     if (cb.onEpoch) cb.onEpoch(epoch);
+  }
+
+  function setGroupOpacity(g, op) {
+    g.children.forEach(m => {
+      if (m.isMesh) { m.material.transparent = true; m.material.opacity = op; }
+      if (m.isLine) { m.material.transparent = true; m.material.opacity = op * 0.42; }
+    });
+  }
+
+  function stepFades(dtMs) {
+    if (!fadeList.length) return;
+    for (let i = fadeList.length - 1; i >= 0; i--) {
+      const f = fadeList[i];
+      f.t += dtMs;
+      const k = Math.min(1, f.t / f.dur);
+      setGroupOpacity(f.g, f.from + (f.to - f.from) * k);
+      if (k >= 1) {
+        if (f.remove && f.g !== contGroup) group.remove(f.g);
+        fadeList.splice(i, 1);
+      }
+    }
   }
 
   /* 纪元主题色 → 海洋底色（压暗调蓝） */
   function mixOcean(hex) {
     const c = new THREE.Color(hex);
-    return new THREE.Color(0x0d2a40).lerp(c, 0.25).getHex();
+    return new THREE.Color(0x0d2a40).lerp(c, 0.12).getHex();
+  }
+
+  /* 构建一个纪元的大陆组（含描边与质心元数据） */
+  function buildEpochGroup(epoch) {
+    const g = new THREE.Group();
+    g.userData.epochId = epoch.id;
+    for (const poly of epoch.continents) {
+      const cont = buildContinent(poly, epoch.color, 0.94);
+      g.add(cont);
+    }
+    return g;
+  }
+
+  /* 纪元主题色 → 海洋底色（压暗调蓝） */
+  function mixOcean(hex) {
+    const c = new THREE.Color(hex);
+    return new THREE.Color(0x0d2a40).lerp(c, 0.12).getHex();
   }
 
   /* ---------- 进入 / 退出 ---------- */
@@ -142,7 +203,7 @@ const BPDeepTime = (() => {
     BPLayers.setVisible('rivers', false);
     BPLayers.setVisible('currents', false);
     BPLayers.setVisible('climate', false);
-    setEpoch(epochId || current || 'present');
+    setEpoch(epochId || current || 'present', 1000);
     BPScene.flyTo(15, 20, 330, 1200);   // 正对盘古中心（大西洋侧）
   }
 
@@ -154,14 +215,17 @@ const BPDeepTime = (() => {
     BPLabels.setVisible(true);
   }
 
-  /* ---------- 渐变动画（纪元插值简化：整组透明度呼吸） ---------- */
+  /* ---------- 逐帧：呼吸 + 淡化过渡驱动 ---------- */
   function update(dtSec) {
     if (!active || !group || !group.visible) return;
+    stepFades(dtSec * 1000);
     /* 大陆微微发光呼吸 */
     for (const cont of contGroup.children) {
       if (!cont.isGroup) continue;
       const mat = cont.children[0] && cont.children[0].material;
-      if (mat && mat.transparent) mat.opacity = 0.9 + Math.sin(performance.now() / 900) * 0.04;
+      if (mat && mat.transparent && mat.opacity > 0.2) {
+        mat.opacity = Math.min(mat.opacity, 0.9) + Math.sin(performance.now() / 900) * 0.03;
+      }
     }
   }
 
