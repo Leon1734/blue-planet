@@ -5,7 +5,7 @@
    版本号随 ?v= 一起升级（当前 bp8）。
    ============================================================ */
 
-const CACHE = 'blueplanet-v10';
+const CACHE = 'blueplanet-v11';
 const ASSETS = [
   './',
   './index.html',
@@ -34,6 +34,8 @@ const ASSETS = [
   './js/i18n.js',
   './puzzle.html',
   './js/puzzle-page.js',
+  './js/i18n.js',
+  './puzzle.html',
   './js/quakes.js',
   './js/deeptime-data.js',
   './js/deeptime.js',
