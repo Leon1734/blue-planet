@@ -142,6 +142,47 @@
     });
   }
 
+  /* v13 我的位置：geolocation → 蓝色脉冲标记 + 相机飞行 */
+  let meMarker = null;
+  function locateMe() {
+    if (!('geolocation' in navigator)) {
+      BPPanels.toast('📍 此环境不支持定位');
+      return;
+    }
+    BPPanels.toast('📡 正在获取你的位置…');
+    navigator.geolocation.getCurrentPosition((pos) => {
+      const lat = pos.coords.latitude, lon = pos.coords.longitude;
+      if (!meMarker) {
+        const grp = new THREE.Group();
+        const dot = new THREE.Mesh(
+          new THREE.SphereGeometry(1.6, 12, 10),
+          new THREE.MeshBasicMaterial({ color: 0x35d0ff, transparent: true, opacity: 0.95,
+            blending: THREE.AdditiveBlending, depthWrite: false })
+        );
+        grp.add(dot);
+        const ring = new THREE.Mesh(
+          new THREE.RingGeometry(2.2, 2.7, 32),
+          new THREE.MeshBasicMaterial({ color: 0x35d0ff, transparent: true, opacity: 0.7,
+            side: THREE.DoubleSide, depthWrite: false })
+        );
+        ring.rotation.x = -Math.PI / 2;
+        grp.add(ring);
+        const h = BPTextures.sampleHeight ? BPTextures.sampleHeight(lat, lon) : 0;
+        grp.position.copy(BPScene.latLonToVec3(lat, lon, BPScene.R + BPScene.RELIEF * h + 0.4));
+        grp.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), grp.position.clone().normalize());
+        BPScene.earthGroup.add(grp);
+        meMarker = { grp, ring };
+      }
+      // 泵一帧刷新太阳/渲染，然后飞过去
+      BPScene.spin.auto = false;
+      BPScene.flyTo(lat, lon, 190, 2000, () => {
+        BPPanels.toast(`📍 你在这里：${Math.abs(lat).toFixed(1)}°${lat >= 0 ? 'N' : 'S'}, ${Math.abs(lon).toFixed(1)}°${lon >= 0 ? 'E' : 'W'}`);
+      });
+    }, (err) => {
+      BPPanels.toast('📍 定位失败：' + (err.code === 1 ? '未授权' : err.message || '不可用'));
+    }, { timeout: 8000, maximumAge: 60000 });
+  }
+
   function zoomBy(f) {
     const c = BPScene.camera;
     const d = Math.max(BPScene.controls.minDistance,
@@ -172,6 +213,8 @@
     };
     BPUI.cb.onCardNext = nextPoiInModule;
     BPUI.cb.onCardClose = deselectPoi;
+    const lb = document.getElementById('btnLocate');
+    if (lb) lb.addEventListener('click', locateMe);
     BPUI.cb.onDay24 = () => {};
   }
 
@@ -196,6 +239,11 @@
     BPScene.update(dtSec, dtMs, nowSec);
     BPMarkers.animate(nowSec);
     BPLabels.update();
+    if (meMarker) {
+      const t = (nowSec % 1.6) / 1.6;
+      meMarker.ring.scale.setScalar(1 + t * 1.6);
+      meMarker.ring.material.opacity = 0.7 * (1 - t);
+    }
     BPLayers.update(dtSec);
     BPCutaway.update(dtSec);
 

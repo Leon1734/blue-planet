@@ -51,7 +51,8 @@ const BPPanels = (() => {
     /* v6 深时古地球 */
     buildDeeptime();
     $('btnDeeptime').addEventListener('click', toggleDeeptime);
-    $('dtExit').addEventListener('click', toggleDeeptime);
+    $('dtExit').addEventListener('click', () => { stopDriftPlay(); toggleDeeptime(); });
+    $('dtPlay').addEventListener('click', toggleDriftPlay);
     BPDeepTime.onEpoch = (epoch) => renderDtInfo(epoch);
     /* v7 大陆拼图 */
     $('btnPuzzle').addEventListener('click', () => BPPuzzle.open());
@@ -338,6 +339,7 @@ const BPPanels = (() => {
       b.className = 'dt-epoch-btn';
       b.innerHTML = `<span class="dot" style="background:${e.color}"></span>${e.t}<i>${e.ma ? e.ma + ' Ma' : '今'}</i>`;
       b.addEventListener('click', () => {
+        stopDriftPlay();
         if (!BPDeepTime.isActive) enterDt();
         BPDeepTime.setEpoch(id);
         document.querySelectorAll('.dt-epoch-btn').forEach(x => x.classList.remove('on'));
@@ -360,6 +362,37 @@ const BPPanels = (() => {
       BPDeepTime.exit();
       $('dtPanel').classList.add('hidden');
       $('btnDeeptime').classList.remove('on');
+    }
+  }
+  /* v13 漂移之旅：从现代一路"开"到寒武纪 */
+  const DRIFT_ORDER = ['present', 'neogene', 'cretaceous', 'jurassic', 'permian-triassic', 'devonian', 'silurian', 'ordovician', 'cambrian'];
+  let driftPlayTimer = null, driftPlaying = false;
+  function toggleDriftPlay() {
+    if (driftPlaying) { stopDriftPlay(); return; }
+    driftPlaying = true;
+    $('dtPlay').textContent = '⏹ 停止';
+    $('dtPlay').classList.add('on');
+    toast('🎬 大陆漂移之旅：5 亿年浓缩成 30 秒');
+    BPDeepTime.setEpoch('present');           // 先回现代（即时）
+    let i = 0;
+    const step = () => {
+      i++;
+      if (i >= DRIFT_ORDER.length || !BPDeepTime.isActive) { stopDriftPlay(); return; }
+      BPDeepTime.setEpoch(DRIFT_ORDER[i], 2800);
+      // 高亮对应纪元按钮
+      document.querySelectorAll('.dt-epoch-btn').forEach(b => b.classList.remove('on'));
+      const btn = [...document.querySelectorAll('.dt-epoch-btn')].find(b => b.textContent.includes(BP_DEEPTIME.find(e => e.id === DRIFT_ORDER[i]).t));
+      if (btn) btn.classList.add('on');
+      driftPlayTimer = setTimeout(step, 3900);
+    };
+    driftPlayTimer = setTimeout(step, 900);
+  }
+  function stopDriftPlay() {
+    clearTimeout(driftPlayTimer);
+    if (driftPlaying) {
+      driftPlaying = false;
+      const b = $('dtPlay');
+      if (b) { b.textContent = '▶ 播放漂移'; b.classList.remove('on'); }
     }
   }
   function renderDtInfo(epoch) {

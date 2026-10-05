@@ -121,8 +121,10 @@ const BPDeepTime = (() => {
 
 
 
-  /* ---------- 纪元切换（交叉淡化；v10 支持平滑过渡动画） ---------- */
+  /* ---------- 纪元切换（交叉淡化 + v13 大陆沿球面漂移） ---------- */
   let fadeList = [];   // { obj, mats, from, to, dur, t, onDone }
+  let driftList = [];  // v13: { cont, q } —— 大陆从旧纪元位置滑向新位置
+  let drift = null;    // { t, dur }
   function setEpoch(id, animateMs) {
     const idx = BP_DEEPTIME.findIndex(e => e.id === id);
     if (idx < 0) return;
@@ -131,6 +133,7 @@ const BPDeepTime = (() => {
     if (!group) build();
 
     const newGroup = buildEpochGroup(epoch);
+    newGroup.userData.epochId = epoch.id;
     group.add(newGroup);
     contGroups.push(newGroup);
     const oldGroup = contGroup;
@@ -138,14 +141,48 @@ const BPDeepTime = (() => {
 
     const dur = animateMs || 0;
     if (dur && oldGroup && oldGroup !== newGroup) {
-      /* 新组 0→0.94，旧组 0.94→0 后移除 */
+      /* v13 漂移：新旧纪元大陆按质心就近配对，
+         新大陆起始姿态 = 从旧质心转到新质心的旋转（即"站在旧位置"），
+         随时间 slerp 回恒等姿态 —— 视觉上大陆沿球面滑过来 */
+      const prevEpoch = BP_DEEPTIME.find(e => e.id === oldGroup.userData.epochId) || null;
+      const matches = matchContinents(prevEpoch, newGroup);
       setGroupOpacity(newGroup, 0);
       fadeList.push({ g: newGroup, from: 0, to: 0.94, t: 0, dur });
       fadeList.push({ g: oldGroup, from: 0.94, to: 0, t: 0, dur, remove: true });
+      driftList = [];
+      if (matches.length) {
+        for (const m of matches) {
+          const vFrom = latLon(m.from[0], m.from[1], 1).normalize();
+          const vTo = latLon(m.to[0], m.to[1], 1).normalize();
+          if (vFrom.dot(vTo) < -0.999) continue;   // 对跖点不定义唯一旋转，只淡化
+          const q = new THREE.Quaternion().setFromUnitVectors(vFrom, vTo);
+          m.cont.quaternion.copy(q);               // 起始：旧位置
+          driftList.push({ cont: m.cont, q });
+        }
+        drift = { t: 0, dur: Math.max(dur, 2400) };
+      }
     }
 
     globeMat.color.set(mixOcean(epoch.color));
     if (cb.onEpoch) cb.onEpoch(epoch);
+  }
+
+  /* 新纪元每个大陆组 ↔ 旧纪元最近质心配对（阈值 60°，避免乱配） */
+  function matchContinents(prevEpoch, newGroup) {
+    const out = [];
+    if (!prevEpoch || !prevEpoch.continents) return out;
+    const prevC = prevEpoch.continents.map(p => centroidOf(p));
+    for (const cont of newGroup.children) {
+      if (!cont.isGroup || !cont.userData.centroid) continue;
+      const c = cont.userData.centroid;
+      let best = null, bestD = 1e9;
+      for (const pc of prevC) {
+        const d = Math.hypot(pc[0] - c[0], pc[1] - c[1]);
+        if (d < bestD) { bestD = d; best = pc; }
+      }
+      if (best && bestD < 60) out.push({ cont, to: c, from: best });
+    }
+    return out;
   }
 
   function setGroupOpacity(g, op) {
@@ -156,6 +193,16 @@ const BPDeepTime = (() => {
   }
 
   function stepFades(dtMs) {
+    /* v13 漂移驱动：姿态从 q（旧位置）slerp 回恒等（新位置） */
+    if (drift) {
+      drift.t += dtMs;
+      const k = Math.min(1, drift.t / drift.dur);
+      const e = k * k * (3 - 2 * k);
+      for (const d of driftList) {
+        d.cont.quaternion.set(0, 0, 0, 1).slerp(d.q, 1 - e);
+      }
+      if (k >= 1) { drift = null; driftList = []; }
+    }
     if (!fadeList.length) return;
     for (let i = fadeList.length - 1; i >= 0; i--) {
       const f = fadeList[i];
