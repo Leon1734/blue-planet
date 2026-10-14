@@ -339,6 +339,21 @@ const BPPanels = (() => {
   function buildDeeptime() {
     const box = $('dtEpochs');
     box.innerHTML = '';
+    /* v17 时间轴滑块：拖动连续切换纪元 */
+    const slider = $('dtSlider');
+    if (slider) {
+      slider.max = String(BP_DEEPTIME_ORDER.length - 1);
+      slider.addEventListener('input', () => {
+        stopDriftPlay();
+        if (!BPDeepTime.isActive) enterDt();
+        const idx = +slider.value;
+        const id = BP_DEEPTIME_ORDER[idx];
+        const prevIdx = BP_DEEPTIME_ORDER.indexOf(BPDeepTime.currentEpoch);
+        /* 相邻纪元用漂移动画，跨多纪元瞬时切换（避免连锁动画过久） */
+        BPDeepTime.setEpoch(id, Math.abs(idx - prevIdx) === 1 ? 2200 : 0);
+        syncDtActive(id);
+      });
+    }
     for (const id of BP_DEEPTIME_ORDER) {
       const e = BP_DEEPTIME.find(x => x.id === id);
       const b = document.createElement('button');
@@ -347,11 +362,28 @@ const BPPanels = (() => {
       b.addEventListener('click', () => {
         stopDriftPlay();
         if (!BPDeepTime.isActive) enterDt();
-        BPDeepTime.setEpoch(id);
-        document.querySelectorAll('.dt-epoch-btn').forEach(x => x.classList.remove('on'));
-        b.classList.add('on');
+        const prevId2 = BPDeepTime.currentEpoch;
+        BPDeepTime.setEpoch(id, prevId2 === id ? 0 : 2200);
+        syncDtActive(id);
       });
       box.appendChild(b);
+    }
+  }
+  /* v17 同步：按钮高亮 / 滑块位置 / 年代标签 */
+  function syncDtActive(id) {
+    document.querySelectorAll('.dt-epoch-btn').forEach(x => {
+      const on = x.textContent.includes(BP_DEEPTIME.find(e => e.id === id).t);
+      x.classList.toggle('on', on);
+    });
+    const slider = $('dtSlider');
+    const idx = BP_DEEPTIME_ORDER.indexOf(id);
+    if (slider && +slider.value !== idx) slider.value = String(idx);
+    const e = BP_DEEPTIME.find(x => x.id === id);
+    const label = $('dtMaLabel');
+    if (label) {
+      label.textContent = e.ma
+        ? (e.ma >= 100 ? (e.ma / 100).toFixed(2).replace(/0$/, '') + ' 亿年前' : e.ma + ' 百万年前')
+        : '0 Ma · 现代';
     }
   }
   function enterDt() {
@@ -360,6 +392,7 @@ const BPPanels = (() => {
     if (api.deselectPoi) api.deselectPoi();
     $('dtPanel').classList.remove('hidden');
     $('btnDeeptime').classList.add('on');
+    syncDtActive('present');
     toast('🦕 深时地球：点上方纪元按钮，回看 5 亿年大陆漂移');
   }
   function toggleDeeptime() {
@@ -385,10 +418,7 @@ const BPPanels = (() => {
       i++;
       if (i >= DRIFT_ORDER.length || !BPDeepTime.isActive) { stopDriftPlay(); return; }
       BPDeepTime.setEpoch(DRIFT_ORDER[i], 2800);
-      // 高亮对应纪元按钮
-      document.querySelectorAll('.dt-epoch-btn').forEach(b => b.classList.remove('on'));
-      const btn = [...document.querySelectorAll('.dt-epoch-btn')].find(b => b.textContent.includes(BP_DEEPTIME.find(e => e.id === DRIFT_ORDER[i]).t));
-      if (btn) btn.classList.add('on');
+      syncDtActive(DRIFT_ORDER[i]);
       driftPlayTimer = setTimeout(step, 3900);
     };
     driftPlayTimer = setTimeout(step, 900);
