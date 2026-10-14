@@ -8,6 +8,15 @@
 const BPSearch = (() => {
 
   const $ = (id) => document.getElementById(id);
+
+  /* v16 拼音首字母映射（常见缩写→汉字） */
+  const PY_ALIAS = {
+    'zmf': '珠穆朗玛峰', 'ml': '马德里', 'ynl': '亚马逊河', 'ymr': '湄公河',
+    'hj': '黄河', 'cj': '长江', 'thz': '太湖', 'blh': '波罗的海',
+    'lyh': '尼罗河', 'dj': '赤道', 'xj': '新疆', 'xz': '西藏',
+    'sst': ' Sanct', 'hs': '火山', 'sd': '山东', 'hn': '海南',
+  };
+
   let index = [];          // { type:'poi'|'label', title, sub, keywords, lat, lon, poiId }
   let cbSelect = null;     // (item)
 
@@ -34,7 +43,9 @@ const BPSearch = (() => {
   }
 
   function query(text) {
-    const q = text.trim().toLowerCase();
+    let q = text.trim().toLowerCase();
+    /* v16 拼音别名展开 */
+    if (PY_ALIAS[q]) q = PY_ALIAS[q].toLowerCase();
     if (!q) return [];
     const scored = [];
     for (const it of index) {

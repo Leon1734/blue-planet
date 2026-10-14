@@ -38,6 +38,7 @@
     BPScene.spin.pausedByCard = true;   // 打开卡片期间暂停自转，便于阅读
     BPUI.openCard(poi);
     BPScene.flyTo(poi.lat, poi.lon, 252, 1500);
+    try { history.replaceState(null, '', '#poi=' + poi.id); } catch (e) {}
     // 打卡 + 徽章解锁提示 + 金环可视化
     const fresh = BPGame.markVisited(id);
     BPMarkers.setVisited(id);
@@ -311,6 +312,14 @@
         start();
         // 入场动画：从远处推近至东亚上空
         BPScene.flyTo(24, 105, 345, 2600);
+        /* v16 hash 分享：#poi=everest 直接飞达 */
+        const hm = location.hash.match(/poi=(\w+)/);
+        if (hm) {
+          setTimeout(() => {
+            const hp = BP_POIS.find(p => p.id === hm[1]);
+            if (hp && typeof BPPanels !== 'undefined') BPPanels.selectApi.selectPoi(hp.id);
+          }, 3000);
+        }
       })
       .catch(err => {
         console.error('[BluePlanet] 初始化失败：', err);

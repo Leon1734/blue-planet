@@ -114,6 +114,42 @@ const BPUI = (() => {
       box.appendChild(p);
     });
     $('cardTags').innerHTML = poi.tags.map(t => `<span># ${t}</span>`).join('');
+    /* v16 相关推荐：同模块相邻 POI 缩略链接 */
+    const relBox = $('cardRelated');
+    if (relBox) {
+      const sibs = BP_POIS.filter(x => x.module === poi.module && x.id !== poi.id).slice(0, 3);
+      relBox.innerHTML = sibs.length
+        ? '<div class="card-rel-title">📍 同模块</div>' + sibs.map(r =>
+            `<button class="card-rel-link" data-poi="${r.id}">${r.title} →</button>`).join('')
+        : '';
+      relBox.classList.toggle('hidden', !sibs.length);
+      relBox.querySelectorAll('.card-rel-link').forEach(b => {
+        b.addEventListener('click', () => {
+          if (typeof BPPanels !== 'undefined' && BPPanels.selectApi) BPPanels.selectApi.selectPoi(b.dataset.poi);
+        });
+      });
+    }
+    /* v16 AI 配图（有 zhipu Key 时自动触发） */
+    const aiBox = $('cardAiImg');
+    if (aiBox) {
+      aiBox.innerHTML = '';
+      aiBox.classList.add('hidden');
+      try {
+        const llm = JSON.parse(localStorage.getItem('bp_llm_v1') || '{}');
+        if (llm.key && llm.provider === 'zhipu') {
+          aiBox.classList.remove('hidden');
+          aiBox.innerHTML = '<div class="ai-loading">🖼 AI 配图生成中…</div>';
+          fetch('https://open.bigmodel.cn/api/paas/v4/images/generations', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + llm.key },
+            body: JSON.stringify({ model: 'cogview-3-flash', prompt: poi.title + ' ' + (poi.tags || []).join(' '), size: '512x288' }),
+          }).then(r => r.json()).then(j => {
+            const url = j.data && j.data[0] && j.data[0].url;
+            aiBox.innerHTML = url ? `<img class="ai-img" src="${url}" alt="AI 配图">` : '';
+          }).catch(() => { aiBox.innerHTML = ''; });
+        }
+      } catch (e) { /* 静默 */ }
+    }
     /* v9 相关冷知识：BP_FACTS 中关联本知识点的条目 */
     const factBox = $('cardFact');
     if (factBox) {
