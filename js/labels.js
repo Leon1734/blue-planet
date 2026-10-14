@@ -63,6 +63,8 @@ const BPLabels = (() => {
       if (L.z > maxZ) { el.style.display = 'none'; continue; }
       const h = BPTextures.sampleHeight ? BPTextures.sampleHeight(L.lat, L.lon) : 0;
       _v.copy(BPScene.latLonToVec3(L.lat, L.lon, BPScene.R + BPScene.RELIEF * h + 0.6));
+      /* 关键：应用地球自转矩阵，让标签随球体一起转（此前遗漏导致自转时标签漂移） */
+      _v.applyQuaternion(BPScene.earthGroup.quaternion);
       const front = _v.clone().normalize().dot(
         cam.position.clone().sub(_v).normalize()) > 0.12;
       if (!front) { el.style.display = 'none'; continue; }

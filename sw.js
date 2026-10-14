@@ -5,7 +5,7 @@
    版本号随 ?v= 一起升级（当前 bp8）。
    ============================================================ */
 
-const CACHE = 'blueplanet-v17';
+const CACHE = 'blueplanet-v18';
 const ASSETS = [
   './',
   './index.html',
