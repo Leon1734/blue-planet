@@ -230,3 +230,6 @@
   .cat-items { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
   .cat-list { max-height: 46vh; }
 }
+
+.cat-only-unvisited { border-style: dashed; }
+.cat-only-unvisited.on { border-style: solid; border-color: var(--c-orange); background: rgba(255, 159, 69, .12); }

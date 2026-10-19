@@ -10,11 +10,13 @@ const BPCatalog = (() => {
   const $ = (id) => document.getElementById(id);
   let filter = 'all';
   let query = '';
+  let onlyUnvisited = false;   // v19：只看未点亮
 
   function open() {
     /* 每次打开重置筛选与搜索，避免上次状态干扰 */
     filter = 'all';
     query = '';
+    onlyUnvisited = false;
     const si = $('catSearch');
     if (si) si.value = '';
     $('catalogModal').classList.remove('hidden');
@@ -36,12 +38,24 @@ const BPCatalog = (() => {
       `<button class="cat-chip${filter === c.id ? ' on' : ''}" data-m="${c.id}">
         <span class="dot" style="background:${c.color}"></span>${c.name}<i>${c.n}</i>
       </button>`).join('');
-    box.querySelectorAll('.cat-chip').forEach(b => {
+    /* v19：只看未点亮 */
+    const visitedSet = (typeof BPGame !== 'undefined' && BPGame.profile) ? new Set(BPGame.profile.visited) : new Set();
+    const left = BP_POIS.filter(p => !visitedSet.has(p.id)).length;
+    box.insertAdjacentHTML('beforeend',
+      `<button class="cat-chip cat-only-unvisited${onlyUnvisited ? ' on' : ''}" id="catOnlyUnvisited">
+        <span class="dot" style="background:var(--c-orange)"></span>只看未点亮<i>${left}</i>
+      </button>`);
+    box.querySelectorAll('.cat-chip[data-m]').forEach(b => {
       b.addEventListener('click', () => {
         filter = b.dataset.m;
         renderFilters();
         renderList();
       });
+    });
+    $('catOnlyUnvisited').addEventListener('click', () => {
+      onlyUnvisited = !onlyUnvisited;
+      renderFilters();
+      renderList();
     });
   }
 
@@ -59,7 +73,10 @@ const BPCatalog = (() => {
       }
       return false;
     };
-    const list = BP_POIS.filter(p => (filter === 'all' || p.module === filter) && match(p));
+    const list = BP_POIS.filter(p =>
+      (filter === 'all' || p.module === filter) &&
+      (!onlyUnvisited || !visited.has(p.id)) &&
+      match(p));
 
     const box = $('catList');
     $('catalogCount').textContent = `${list.length} / ${BP_POIS.length}`;
