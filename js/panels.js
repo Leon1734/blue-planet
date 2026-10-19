@@ -40,6 +40,8 @@ const BPPanels = (() => {
     BPSearch.init((poiId) => api.selectPoi(poiId));
     BPAssistant.wire();
     BPLab.wire();
+    /* v18 知识总览 */
+    BPCatalog.init();
     /* v4：随机探索 */
     buildRandomMenu();
     $('btnRandom').addEventListener('click', () => {

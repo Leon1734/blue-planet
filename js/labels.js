@@ -41,45 +41,83 @@ const BPLabels = (() => {
     });
   }
 
-  /* 相机距离 → 允许显示的最大分级 */
+  /* 相机距离 → 允许显示的最大分级（移动端降密：小屏最多显示到 z2） */
   function maxLevel(camDist) {
+    const mobile = window.innerWidth < 700;
     if (camDist > 780) return 1;
     if (camDist > 430) return 2;
-    return 3;
+    return mobile ? 2 : 3;
   }
 
-  /* 每帧更新：投影 + 背面剔除 + LOD */
-  function update() {
+  /* v18 性能：脏检查 + 限帧 + 样式去重
+     - 相机与地球姿态未变化时直接跳过（静止画面零开销）
+     - 最多 ~30fps 更新（标签无需 60fps）
+     - 仅位置实际变化 >0.5px 才写 style（避免触发重排）*/
+  let lastT = 0, lastUpdate = 0;
+  let lastCamQ = null, lastCamPos = null, lastEarthQ = null;
+
+  function poseChanged() {
+    const cam = BPScene.camera;
+    if (!lastCamQ) return true;
+    if (cam.position.distanceToSquared(lastCamPos) > 0.01) return true;
+    if (lastCamQ.angleTo(cam.quaternion) > 0.0004) return true;
+    if (lastEarthQ.angleTo(BPScene.earthGroup.quaternion) > 0.0002) return true;
+    return false;
+  }
+
+  function update(force) {
     if (!container) return;
     if (!visible) { if (container.style.display !== 'none') container.style.display = 'none'; return; }
     if (container.style.display !== 'block') container.style.display = 'block';
+    const now = performance.now();
+    /* 限帧：约 30fps；但姿态变化时也要及时（用 28ms 门限） */
+    if (!force && now - lastUpdate < 28) return;
+    if (!force && !poseChanged()) return;
+    lastUpdate = now;
     const cam = BPScene.camera;
     const camDist = cam.position.length();
     const maxZ = maxLevel(camDist);
     const W = window.innerWidth, H = window.innerHeight;
+    lastCamQ = cam.quaternion.clone();
+    lastCamPos = cam.position.clone();
+    lastEarthQ = BPScene.earthGroup.quaternion.clone();
 
     for (const it of items) {
       const { data: L, el } = it;
-      if (L.z > maxZ) { el.style.display = 'none'; continue; }
+      if (L.z > maxZ) {
+        if (el._shown !== false) { el.style.display = 'none'; el._shown = false; }
+        continue;
+      }
       const h = BPTextures.sampleHeight ? BPTextures.sampleHeight(L.lat, L.lon) : 0;
       _v.copy(BPScene.latLonToVec3(L.lat, L.lon, BPScene.R + BPScene.RELIEF * h + 0.6));
       /* 关键：应用地球自转矩阵，让标签随球体一起转（此前遗漏导致自转时标签漂移） */
       _v.applyQuaternion(BPScene.earthGroup.quaternion);
       const front = _v.clone().normalize().dot(
         cam.position.clone().sub(_v).normalize()) > 0.12;
-      if (!front) { el.style.display = 'none'; continue; }
+      if (!front) {
+        if (el._shown !== false) { el.style.display = 'none'; el._shown = false; }
+        continue;
+      }
       _v.project(cam);
       const x = (_v.x * 0.5 + 0.5) * W;
       const y = (-_v.y * 0.5 + 0.5) * H;
-      if (x < -40 || x > W + 40 || y < -20 || y > H + 20) { el.style.display = 'none'; continue; }
-      el.style.display = 'block';
-      el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) translate(-50%, -50%)`;
+      if (x < -40 || x > W + 40 || y < -20 || y > H + 20) {
+        if (el._shown !== false) { el.style.display = 'none'; el._shown = false; }
+        continue;
+      }
+      if (el._shown !== true) { el.style.display = 'block'; el._shown = true; }
+      /* 位置去重：变化小于 0.5px 不写样式 */
+      if (el._lx === undefined || Math.abs(x - el._lx) > 0.5 || Math.abs(y - el._ly) > 0.5) {
+        el._lx = x; el._ly = y;
+        el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) translate(-50%, -50%)`;
+      }
     }
   }
 
   function setVisible(v) {
     visible = v;
     if (v && container) container.style.display = 'block';
+    lastCamQ = null;   // v18：重新可见时强制刷新位置
   }
 
   return { build, update, setVisible };
