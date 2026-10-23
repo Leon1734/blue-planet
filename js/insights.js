@@ -107,5 +107,55 @@ const BPInsights = (() => {
     });
   }
 
-  return { render };
+  /* v22-c 学习报告导出：纯文本，方便家长/老师存档 */
+  function buildReport() {
+    const pf = BPGame.profile;
+    const vSet = new Set(pf.visited || []);
+    const L = [];
+    const bar = (pct) => '█'.repeat(Math.round(pct / 10)) + '░'.repeat(10 - Math.round(pct / 10));
+    L.push('🌍 蓝色星球 · 学习报告');
+    L.push('生成时间：' + new Date().toLocaleString('zh-CN'));
+    L.push('═'.repeat(24));
+    L.push('【总体进度】');
+    const pctAll = pf.visited.length / BP_POIS.length * 100;
+    L.push(`已探索知识点：${pf.visited.length} / ${BP_POIS.length}（${pctAll.toFixed(1)}%）${bar(pctAll)}`);
+    if (pf.quizBest) L.push(`知识闯关最佳：${pf.quizBest} 分`);
+    if (pf.puzzleWins) L.push(`大陆拼图完成：${pf.puzzleWins} 次`);
+    const earnedNames = (pf.badges || [])
+      .map(id => (BPGame.badges.find(b => b.id === id) || {}).t).filter(Boolean);
+    L.push(`已获徽章：${earnedNames.length} 枚${earnedNames.length ? '（' + earnedNames.join('、') + '）' : ''}`);
+    L.push('');
+    L.push('【分模块进度】');
+    for (const mod of BP_MODULES) {
+      const all = BP_POIS.filter(p => p.module === mod.id);
+      const done = all.filter(p => vSet.has(p.id)).length;
+      const pct = all.length ? done / all.length * 100 : 0;
+      L.push(`${mod.name}：${done}/${all.length}（${pct.toFixed(0)}%）${bar(pct)}`);
+    }
+    L.push('');
+    L.push('【已探索知识点清单】');
+    for (const mod of BP_MODULES) {
+      const done = BP_POIS.filter(p => p.module === mod.id && vSet.has(p.id));
+      if (!done.length) continue;
+      L.push(`◆ ${mod.name}`);
+      done.forEach((p, i) => L.push(`  ${i + 1}. ${p.title}`));
+    }
+    if (!vSet.size) L.push('（还没有探索记录，快去点亮第一个知识点吧！）');
+    L.push('');
+    L.push('—— 来自蓝色星球（会转的地理课本）');
+    return L.join('\n');
+  }
+
+  function exportReport() {
+    const blob = new Blob(['\ufeff' + buildReport()], { type: 'text/plain;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    a.download = `蓝色星球学习报告_${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}.txt`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+  }
+
+  return { render, exportReport };
 })();

@@ -352,6 +352,8 @@ const BPUI = (() => {
 
     $('cardClose').addEventListener('click', () => { if (cb.onCardClose) cb.onCardClose(); });
     $('cardNext').addEventListener('click', () => { if (cb.onCardNext) cb.onCardNext(); });
+    const pr = $('cardPrint');
+    if (pr) pr.addEventListener('click', () => window.print());
 
     // 首次交互后淡出提示
     const dismiss = () => { fadeHint(); window.removeEventListener('pointerdown', dismiss); };

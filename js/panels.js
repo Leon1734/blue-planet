@@ -68,6 +68,22 @@ const BPPanels = (() => {
     $('dtExit').addEventListener('click', () => { stopDriftPlay(); toggleDeeptime(); });
     $('dtPlay').addEventListener('click', toggleDriftPlay);
     BPDeepTime.onEpoch = (epoch) => renderDtInfo(epoch);
+    /* v22 纪元切换大字标题覆盖层 */
+    BPDeepTime.onEpochShow = (epoch) => {
+      const ov = $('dtEpochOverlay');
+      if (!ov) return;
+      ov.querySelector('.dt-overlay-name').textContent = epoch.t;
+      ov.querySelector('.dt-overlay-date').textContent =
+        epoch.ma ? `${epoch.ma} 百万年前` : '现代';
+      ov.classList.remove('hidden');
+      ov.style.transition = 'none';
+      ov.style.opacity = '1';
+      setTimeout(() => {
+        ov.style.transition = 'opacity 1.4s ease';
+        ov.style.opacity = '0';
+        setTimeout(() => { ov.classList.add('hidden'); ov.style.transition = ''; }, 1500);
+      }, 2000);
+    };
     /* v7 大陆拼图 */
     $('btnPuzzle').addEventListener('click', () => BPPuzzle.open());
     $('puzzleClose').addEventListener('click', () => BPPuzzle.close());
@@ -285,6 +301,8 @@ const BPPanels = (() => {
     $('quizClose').addEventListener('click', closeModal);
     $('insClose').addEventListener('click', closeModal);
     $('badgeClose').addEventListener('click', closeModal);
+    const iex = $('insExport');
+    if (iex) iex.addEventListener('click', () => BPInsights.exportReport());
     document.querySelectorAll('.modal').forEach(m => {
       m.addEventListener('click', (e) => { if (e.target === m) closeModal(); });
     });

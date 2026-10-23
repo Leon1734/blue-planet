@@ -7,10 +7,10 @@
 <title>蓝色星球 · BluePlanet — 地球地理科普</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="css/style.css?v=bp41">
-<link rel="stylesheet" href="css/modules.css?v=bp41">
-<link rel="stylesheet" href="css/v3.css?v=bp41">
-<link rel="stylesheet" href="css/v5.css?v=bp41">
+<link rel="stylesheet" href="css/style.css?v=bp43">
+<link rel="stylesheet" href="css/modules.css?v=bp43">
+<link rel="stylesheet" href="css/v3.css?v=bp43">
+<link rel="stylesheet" href="css/v5.css?v=bp43">
 <meta name="theme-color" content="#0D1B2A">
 </head>
 <body>
@@ -85,6 +85,10 @@
   </div>
   <div class="dt-epochs" id="dtEpochs"></div>
   <div class="dt-info hidden" id="dtInfo"></div>
+  <div id="dtEpochOverlay" class="dt-epoch-overlay hidden">
+    <div class="dt-overlay-name"></div>
+    <div class="dt-overlay-date"></div>
+  </div>
 </div>
 
 <!-- v3 知识搜索框（顶栏右侧） -->
@@ -210,6 +214,7 @@
   <div class="modal-box wide">
     <div class="modal-head">📊 数据看板<button id="insClose" class="card-close" title="关闭">✕</button></div>
     <div id="insBody" class="ins-body"></div>
+    <div class="ins-foot"><button id="insExport" class="chip-btn">📄 导出学习报告</button></div>
   </div>
 </div>
 
@@ -353,6 +358,7 @@
   <div class="card-foot">
     <span class="card-coord" id="cardCoord"></span>
     <button id="cardShare" class="chip-btn hidden" title="复制本知识点链接">🔗 分享链接</button>
+    <button id="cardPrint" class="chip-btn" title="打印本知识点">🖨 打印</button>
     <button class="chip-btn" id="cardNext">同模块下一个 →</button>
   </div>
 </article>
@@ -362,31 +368,31 @@
 <script src="js/lib/OrbitControls.js"></script>
 <script>
 /* N1①：http(s) 环境跳过 1.2MB 内嵌贴图（直接加载 textures/ 真实文件），file:// 才内嵌 */
-if (location.protocol === 'file:') document.write('<script src="js/textures-data.js?v=bp41"><\/script>');
+if (location.protocol === 'file:') document.write('<script src="js/textures-data.js?v=bp43"><\/script>');
 </script>
-<script src="js/data.js?v=bp41"></script>
-<script src="js/textures.js?v=bp41"></script>
-<script src="js/scene.js?v=bp41"></script>
-<script src="js/markers.js?v=bp41"></script>
-<script src="js/labels.js?v=bp41"></script>
-<script src="js/figures.js?v=bp41"></script>
-<script src="js/layers.js?v=bp41"></script>
-<script src="js/cutaway.js?v=bp41"></script>
-<script src="js/tours.js?v=bp41"></script>
-<script src="js/game.js?v=bp41"></script>
-<script src="js/insights.js?v=bp41"></script>
-<script src="js/search.js?v=bp41"></script>
-<script src="js/assistant.js?v=bp41"></script>
-<script src="js/lab.js?v=bp41"></script>
-<script src="js/random.js?v=bp41"></script>
-<script src="js/quakes.js?v=bp41"></script>
-<script src="js/deeptime-data.js?v=bp41"></script>
-<script src="js/deeptime.js?v=bp41"></script>
-<script src="js/puzzle.js?v=bp41"></script>
-<script src="js/panels.js?v=bp41"></script>
-<script src="js/catalog.js?v=bp41"></script>
-<script src="js/i18n.js?v=bp41"></script>
-<script src="js/ui.js?v=bp41"></script>
-<script src="js/main.js?v=bp41"></script>
+<script src="js/data.js?v=bp43"></script>
+<script src="js/textures.js?v=bp43"></script>
+<script src="js/scene.js?v=bp43"></script>
+<script src="js/markers.js?v=bp43"></script>
+<script src="js/labels.js?v=bp43"></script>
+<script src="js/figures.js?v=bp43"></script>
+<script src="js/layers.js?v=bp43"></script>
+<script src="js/cutaway.js?v=bp43"></script>
+<script src="js/tours.js?v=bp43"></script>
+<script src="js/game.js?v=bp43"></script>
+<script src="js/insights.js?v=bp43"></script>
+<script src="js/search.js?v=bp43"></script>
+<script src="js/assistant.js?v=bp43"></script>
+<script src="js/lab.js?v=bp43"></script>
+<script src="js/random.js?v=bp43"></script>
+<script src="js/quakes.js?v=bp43"></script>
+<script src="js/deeptime-data.js?v=bp43"></script>
+<script src="js/deeptime.js?v=bp43"></script>
+<script src="js/puzzle.js?v=bp43"></script>
+<script src="js/panels.js?v=bp43"></script>
+<script src="js/catalog.js?v=bp43"></script>
+<script src="js/i18n.js?v=bp43"></script>
+<script src="js/ui.js?v=bp43"></script>
+<script src="js/main.js?v=bp43"></script>
 </body>
 </html>

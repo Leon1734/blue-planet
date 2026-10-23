@@ -228,6 +228,17 @@
       else document.documentElement.requestFullscreen();
     });
     if (lb) lb.addEventListener('click', locateMe);
+    /* v22 卡片分享按钮 */
+    const cs = document.getElementById('cardShareBtn');
+    if (cs) cs.addEventListener('click', () => {
+      const pid = BPMarkers.getSelected();
+      if (!pid) return;
+      const url = location.origin + location.pathname + '#poi=' + pid;
+      navigator.clipboard.writeText(url).then(() => {
+        cs.textContent = '✅ 已复制';
+        setTimeout(() => { cs.textContent = '🔗 分享'; }, 2000);
+      }).catch(() => {});
+    });
     BPUI.cb.onDay24 = () => {};
   }
 

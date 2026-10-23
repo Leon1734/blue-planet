@@ -165,6 +165,8 @@ const BPDeepTime = (() => {
 
     globeMat.color.set(mixOcean(epoch.color));
     if (cb.onEpoch) cb.onEpoch(epoch);
+    /* v22 纪元名称覆盖层动画 */
+    if (cb.onEpochShow) cb.onEpochShow(epoch);
   }
 
   /* 新纪元每个大陆组 ↔ 旧纪元最近质心配对（阈值 60°，避免乱配） */
@@ -280,6 +282,7 @@ const BPDeepTime = (() => {
 
   return {
     enter, exit, setEpoch, update,
+    set onEpochShow(fn) { cb.onEpochShow = fn; },
     get isActive() { return active; },
     get currentEpoch() { return current; },
     set onEpoch(fn) { cb.onEpoch = fn; },
