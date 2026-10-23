@@ -7,10 +7,10 @@
 <title>蓝色星球 · BluePlanet — 地球地理科普</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="css/style.css?v=bp39">
-<link rel="stylesheet" href="css/modules.css?v=bp39">
-<link rel="stylesheet" href="css/v3.css?v=bp39">
-<link rel="stylesheet" href="css/v5.css?v=bp39">
+<link rel="stylesheet" href="css/style.css?v=bp40">
+<link rel="stylesheet" href="css/modules.css?v=bp40">
+<link rel="stylesheet" href="css/v3.css?v=bp40">
+<link rel="stylesheet" href="css/v5.css?v=bp40">
 <meta name="theme-color" content="#0D1B2A">
 </head>
 <body>
@@ -52,7 +52,8 @@
   <button id="btnInsights" class="tool-btn" title="数据看板：气温 / CO₂ / 人口"><span class="tool-ico">📊</span><span class="tool-txt">看板</span></button>
   <button id="btnBadges" class="tool-btn" title="我的徽章与进度"><span class="tool-ico">🏅</span><span class="tool-txt">徽章</span></button>
   <button id="btnAssistant" class="tool-btn" title="地理小助手：离线问答"><span class="tool-ico">🤖</span><span class="tool-txt">助手</span></button>
-  <button id="btnRandom" class="tool-btn" title="随机探索：一键飞达任意地理点（快捷键 R）"><span class="tool-ico">🎲</span><span class="tool-txt">随机</span></button>
+  <button id="btnFullscreen" class="tool-btn" title="全屏/退出全屏"><span class="tool-ico">⛶</span><span class="tool-txt">全屏</span></button>
+<button id="btnRandom" class="tool-btn" title="随机探索：一键飞达任意地理点（快捷键 R）"><span class="tool-ico">🎲</span><span class="tool-txt">随机</span></button>
 </div>
 
 <!-- v4 随机探索菜单 -->
@@ -336,6 +337,7 @@
   <div class="card-ai hidden" id="cardAiImg"></div>
   <div class="card-foot">
     <span class="card-coord" id="cardCoord"></span>
+    <button id="cardShare" class="chip-btn hidden" title="复制本知识点链接">🔗 分享链接</button>
     <button class="chip-btn" id="cardNext">同模块下一个 →</button>
   </div>
 </article>
@@ -345,31 +347,31 @@
 <script src="js/lib/OrbitControls.js"></script>
 <script>
 /* N1①：http(s) 环境跳过 1.2MB 内嵌贴图（直接加载 textures/ 真实文件），file:// 才内嵌 */
-if (location.protocol === 'file:') document.write('<script src="js/textures-data.js?v=bp39"><\/script>');
+if (location.protocol === 'file:') document.write('<script src="js/textures-data.js?v=bp40"><\/script>');
 </script>
-<script src="js/data.js?v=bp39"></script>
-<script src="js/textures.js?v=bp39"></script>
-<script src="js/scene.js?v=bp39"></script>
-<script src="js/markers.js?v=bp39"></script>
-<script src="js/labels.js?v=bp39"></script>
-<script src="js/figures.js?v=bp39"></script>
-<script src="js/layers.js?v=bp39"></script>
-<script src="js/cutaway.js?v=bp39"></script>
-<script src="js/tours.js?v=bp39"></script>
-<script src="js/game.js?v=bp39"></script>
-<script src="js/insights.js?v=bp39"></script>
-<script src="js/search.js?v=bp39"></script>
-<script src="js/assistant.js?v=bp39"></script>
-<script src="js/lab.js?v=bp39"></script>
-<script src="js/random.js?v=bp39"></script>
-<script src="js/quakes.js?v=bp39"></script>
-<script src="js/deeptime-data.js?v=bp39"></script>
-<script src="js/deeptime.js?v=bp39"></script>
-<script src="js/puzzle.js?v=bp39"></script>
-<script src="js/panels.js?v=bp39"></script>
-<script src="js/catalog.js?v=bp39"></script>
-<script src="js/i18n.js?v=bp39"></script>
-<script src="js/ui.js?v=bp39"></script>
-<script src="js/main.js?v=bp39"></script>
+<script src="js/data.js?v=bp40"></script>
+<script src="js/textures.js?v=bp40"></script>
+<script src="js/scene.js?v=bp40"></script>
+<script src="js/markers.js?v=bp40"></script>
+<script src="js/labels.js?v=bp40"></script>
+<script src="js/figures.js?v=bp40"></script>
+<script src="js/layers.js?v=bp40"></script>
+<script src="js/cutaway.js?v=bp40"></script>
+<script src="js/tours.js?v=bp40"></script>
+<script src="js/game.js?v=bp40"></script>
+<script src="js/insights.js?v=bp40"></script>
+<script src="js/search.js?v=bp40"></script>
+<script src="js/assistant.js?v=bp40"></script>
+<script src="js/lab.js?v=bp40"></script>
+<script src="js/random.js?v=bp40"></script>
+<script src="js/quakes.js?v=bp40"></script>
+<script src="js/deeptime-data.js?v=bp40"></script>
+<script src="js/deeptime.js?v=bp40"></script>
+<script src="js/puzzle.js?v=bp40"></script>
+<script src="js/panels.js?v=bp40"></script>
+<script src="js/catalog.js?v=bp40"></script>
+<script src="js/i18n.js?v=bp40"></script>
+<script src="js/ui.js?v=bp40"></script>
+<script src="js/main.js?v=bp40"></script>
 </body>
 </html>

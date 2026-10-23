@@ -160,6 +160,28 @@ const BPUI = (() => {
     const latStr = `${Math.abs(poi.lat).toFixed(1)}°${poi.lat >= 0 ? 'N' : 'S'}`;
     const lonStr = `${Math.abs(poi.lon).toFixed(1)}°${poi.lon >= 0 ? 'E' : 'W'}`;
     $('cardCoord').textContent = `${latStr}, ${lonStr}`;
+    /* v20 分享按钮 */
+    const share = $('cardShare');
+    if (share) {
+      share.classList.remove('hidden');
+      share.textContent = '🔗 分享链接';
+      share.onclick = async () => {
+        const url = `${location.origin}${location.pathname}#poi=${poi.id}`;
+        try {
+          await navigator.clipboard.writeText(url);
+          share.textContent = '✅ 已复制';
+          setTimeout(() => { share.textContent = '🔗 分享链接'; }, 2000);
+        } catch (e) {
+          /* fallback */
+          const ta = document.createElement('textarea');
+          ta.value = url; document.body.appendChild(ta);
+          ta.select(); document.execCommand('copy');
+          document.body.removeChild(ta);
+          share.textContent = '✅ 已复制';
+          setTimeout(() => { share.textContent = '🔗 分享链接'; }, 2000);
+        }
+      };
+    }
   }
   function openCard(poi) {
     fillCard(poi);

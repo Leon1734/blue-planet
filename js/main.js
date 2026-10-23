@@ -52,6 +52,8 @@
     BPMarkers.setSelected(null);
     BPScene.spin.pausedByCard = false;
     BPUI.closeCard();
+    /* v20: 关卡片时清 URL hash */
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
   }
 
   function nextPoiInModule() {
@@ -215,6 +217,11 @@
     BPUI.cb.onCardNext = nextPoiInModule;
     BPUI.cb.onCardClose = deselectPoi;
     const lb = document.getElementById('btnLocate');
+    const fs = document.getElementById('btnFullscreen');
+    if (fs) fs.addEventListener('click', () => {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else document.documentElement.requestFullscreen();
+    });
     if (lb) lb.addEventListener('click', locateMe);
     BPUI.cb.onDay24 = () => {};
   }
