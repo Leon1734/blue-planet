@@ -24,6 +24,12 @@ const BPSearch = (() => {
     index = [];
     const modName = {};
     BP_MODULES.forEach(m => modName[m.id] = m.name);
+    /* v21 模块名→关键词映射（搜索模块名可列出该模块全部 POI） */
+    const MOD_KEYWORDS = {};
+    for (const m of BP_MODULES) {
+      MOD_KEYWORDS[m.name] = m.id;
+      MOD_KEYWORDS[m.id] = m.id;
+    }
     BP_POIS.forEach(p => {
       index.push({
         type: 'poi', title: p.title,
@@ -53,6 +59,7 @@ const BPSearch = (() => {
       let s = -1;
       if (t.includes(q)) s = 100 - t.indexOf(q);
       else if (it.keywords.includes(q)) s = 50;
+      else if (it.sub && it.sub.toLowerCase().includes(q)) s = 40;
       else {
         // 逐字匹配（支持"珠峰"→"珠穆朗玛峰"式部分命中）
         const hits = [...q].filter(ch => t.includes(ch)).length;

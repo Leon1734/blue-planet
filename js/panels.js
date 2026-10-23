@@ -50,6 +50,18 @@ const BPPanels = (() => {
     BPRandom.onSelect = (poiId) => api.selectPoi(poiId);
     BPRandom.onUI = renderRandomMenu;
     BPRandom.onToast = toast;
+    /* v21 搜索清除按钮 */
+    const sc = $('searchClear');
+    if (sc) {
+      sc.addEventListener('click', () => {
+        $('searchInput').value = '';
+        $('searchDrop').classList.add('hidden');
+        $('searchInput').focus();
+      });
+      $('searchInput').addEventListener('input', () => {
+        sc.style.display = $('searchInput').value ? 'block' : 'none';
+      });
+    }
     /* v6 深时古地球 */
     buildDeeptime();
     $('btnDeeptime').addEventListener('click', toggleDeeptime);

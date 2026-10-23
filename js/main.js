@@ -122,6 +122,11 @@
       const tag = document.activeElement && document.activeElement.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA') return;
       if (document.querySelector('.modal:not(.hidden)')) return;
+      if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+        const h = document.getElementById('kbdHelp');
+        if (h) h.classList.toggle('hidden');
+        return;
+      }
       if (e.key === '/') {
         e.preventDefault();
         const si = document.getElementById('searchInput');

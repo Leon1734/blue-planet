@@ -7,10 +7,10 @@
 <title>蓝色星球 · BluePlanet — 地球地理科普</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="css/style.css?v=bp40">
-<link rel="stylesheet" href="css/modules.css?v=bp40">
-<link rel="stylesheet" href="css/v3.css?v=bp40">
-<link rel="stylesheet" href="css/v5.css?v=bp40">
+<link rel="stylesheet" href="css/style.css?v=bp41">
+<link rel="stylesheet" href="css/modules.css?v=bp41">
+<link rel="stylesheet" href="css/v3.css?v=bp41">
+<link rel="stylesheet" href="css/v5.css?v=bp41">
 <meta name="theme-color" content="#0D1B2A">
 </head>
 <body>
@@ -58,6 +58,18 @@
 
 <!-- v4 随机探索菜单 -->
 <div id="randomMenu" class="hidden"></div>
+<!-- v21 键盘快捷键帮助 -->
+<div id="kbdHelp" class="hidden" style="position:fixed;top:68px;right:16px;z-index:30;background:var(--c-panel-solid,#12233a);border:1px solid var(--c-line);border-radius:12px;padding:14px 18px;box-shadow:0 8px 32px rgba(0,0,0,.45);font-size:12px;color:var(--c-text,#E8F1F8);max-width:280px">
+  <div style="font-weight:600;margin-bottom:8px">⌨️ 键盘快捷键</div>
+  <div style="display:grid;grid-template-columns:auto 1fr;gap:4px 10px">
+    <kbd style="background:rgba(255,255,255,.08);padding:1px 6px;border-radius:4px;font-size:11px">/</kbd><span>搜索</span>
+    <kbd style="background:rgba(255,255,255,.08);padding:1px 6px;border-radius:4px;font-size:11px">R</kbd><span>随机探索</span>
+    <kbd style="background:rgba(255,255,255,.08);padding:1px 6px;border-radius:4px;font-size:11px">1-9</kbd><span>切换模块</span>
+    <kbd style="background:rgba(255,255,255,.08);padding:1px 6px;border-radius:4px;font-size:11px">+/-</kbd><span>缩放</span>
+    <kbd style="background:rgba(255,255,255,.08);padding:1px 6px;border-radius:4px;font-size:11px">Esc</kbd><span>关闭卡片</span>
+  </div>
+  <div style="margin-top:8px;color:var(--c-text-dim,#9FB6C9);font-size:10.5px">拖拽旋转 · 滚轮缩放 · 双击定位</div>
+</div>
 
 <!-- 深时古地球面板 -->
 <div id="dtPanel" class="hidden">
@@ -77,7 +89,10 @@
 
 <!-- v3 知识搜索框（顶栏右侧） -->
 <div id="searchBox">
+  <div style="position:relative;flex:1">
   <input id="searchInput" type="text" placeholder="搜索知识点 / 地名…（按 /）" autocomplete="off" aria-label="搜索知识点与地名">
+  <button id="searchClear" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--c-text-dim);cursor:pointer;font-size:14px;display:none" title="清除">✕</button>
+</div>
   <div id="searchDrop" class="hidden"></div>
 </div>
 
@@ -347,31 +362,31 @@
 <script src="js/lib/OrbitControls.js"></script>
 <script>
 /* N1①：http(s) 环境跳过 1.2MB 内嵌贴图（直接加载 textures/ 真实文件），file:// 才内嵌 */
-if (location.protocol === 'file:') document.write('<script src="js/textures-data.js?v=bp40"><\/script>');
+if (location.protocol === 'file:') document.write('<script src="js/textures-data.js?v=bp41"><\/script>');
 </script>
-<script src="js/data.js?v=bp40"></script>
-<script src="js/textures.js?v=bp40"></script>
-<script src="js/scene.js?v=bp40"></script>
-<script src="js/markers.js?v=bp40"></script>
-<script src="js/labels.js?v=bp40"></script>
-<script src="js/figures.js?v=bp40"></script>
-<script src="js/layers.js?v=bp40"></script>
-<script src="js/cutaway.js?v=bp40"></script>
-<script src="js/tours.js?v=bp40"></script>
-<script src="js/game.js?v=bp40"></script>
-<script src="js/insights.js?v=bp40"></script>
-<script src="js/search.js?v=bp40"></script>
-<script src="js/assistant.js?v=bp40"></script>
-<script src="js/lab.js?v=bp40"></script>
-<script src="js/random.js?v=bp40"></script>
-<script src="js/quakes.js?v=bp40"></script>
-<script src="js/deeptime-data.js?v=bp40"></script>
-<script src="js/deeptime.js?v=bp40"></script>
-<script src="js/puzzle.js?v=bp40"></script>
-<script src="js/panels.js?v=bp40"></script>
-<script src="js/catalog.js?v=bp40"></script>
-<script src="js/i18n.js?v=bp40"></script>
-<script src="js/ui.js?v=bp40"></script>
-<script src="js/main.js?v=bp40"></script>
+<script src="js/data.js?v=bp41"></script>
+<script src="js/textures.js?v=bp41"></script>
+<script src="js/scene.js?v=bp41"></script>
+<script src="js/markers.js?v=bp41"></script>
+<script src="js/labels.js?v=bp41"></script>
+<script src="js/figures.js?v=bp41"></script>
+<script src="js/layers.js?v=bp41"></script>
+<script src="js/cutaway.js?v=bp41"></script>
+<script src="js/tours.js?v=bp41"></script>
+<script src="js/game.js?v=bp41"></script>
+<script src="js/insights.js?v=bp41"></script>
+<script src="js/search.js?v=bp41"></script>
+<script src="js/assistant.js?v=bp41"></script>
+<script src="js/lab.js?v=bp41"></script>
+<script src="js/random.js?v=bp41"></script>
+<script src="js/quakes.js?v=bp41"></script>
+<script src="js/deeptime-data.js?v=bp41"></script>
+<script src="js/deeptime.js?v=bp41"></script>
+<script src="js/puzzle.js?v=bp41"></script>
+<script src="js/panels.js?v=bp41"></script>
+<script src="js/catalog.js?v=bp41"></script>
+<script src="js/i18n.js?v=bp41"></script>
+<script src="js/ui.js?v=bp41"></script>
+<script src="js/main.js?v=bp41"></script>
 </body>
 </html>
