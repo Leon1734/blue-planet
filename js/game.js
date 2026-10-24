@@ -9,7 +9,7 @@
 const BPGame = (() => {
 
   const KEY = 'bp_profile_v1';
-  let profile = { visited: [], badges: [], quizBest: 0 };
+  let profile = { visited: [], favs: [], badges: [], quizBest: 0 };
 
   /* ---------- 档案 ---------- */
   function load() {
@@ -126,8 +126,19 @@ const BPGame = (() => {
     return { done: false };
   }
 
+  /* ---------- v24 知识点收藏 ---------- */
+  function isFav(id) { return (profile.favs || []).includes(id); }
+  function toggleFav(id) {
+    profile.favs = profile.favs || [];
+    const i = profile.favs.indexOf(id);
+    if (i >= 0) profile.favs.splice(i, 1); else profile.favs.push(id);
+    save();
+    return i < 0;   // 返回当前收藏状态
+  }
+
   return {
     load, markVisited, markQuiz, markRandom, markPuzzle, dailyPoi, startQuiz, answerQuiz, nextQuiz,
+    toggleFav, isFav,
     get profile() { return profile; },
     get badges() { return badgeDef(); },
     get quizState() { return quiz; },

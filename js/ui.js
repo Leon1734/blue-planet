@@ -160,6 +160,19 @@ const BPUI = (() => {
     const latStr = `${Math.abs(poi.lat).toFixed(1)}°${poi.lat >= 0 ? 'N' : 'S'}`;
     const lonStr = `${Math.abs(poi.lon).toFixed(1)}°${poi.lon >= 0 ? 'E' : 'W'}`;
     $('cardCoord').textContent = `${latStr}, ${lonStr}`;
+    /* v24 收藏按钮 */
+    const favBtn = $('cardFav');
+    if (favBtn) {
+      const on = typeof BPGame !== 'undefined' && BPGame.isFav && BPGame.isFav(poi.id);
+      favBtn.textContent = on ? '⭐ 已收藏' : '☆ 收藏';
+      favBtn.classList.toggle('on', on);
+      favBtn.onclick = () => {
+        if (typeof BPGame === 'undefined' || !BPGame.toggleFav) return;
+        const now = BPGame.toggleFav(poi.id);
+        favBtn.textContent = now ? '⭐ 已收藏' : '☆ 收藏';
+        favBtn.classList.toggle('on', now);
+      };
+    }
     /* v20 分享按钮 */
     const share = $('cardShare');
     if (share) {

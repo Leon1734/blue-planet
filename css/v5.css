@@ -296,3 +296,26 @@
 @media (max-width: 768px) {
   #measurePanel { bottom: 96px; left: 8px; }
 }
+
+/* ===== v24 收藏按钮 & 深时生命演化时间轴 ===== */
+.chip-btn.on { border-color: #ffc94d; color: #ffd97a; }
+.cat-fav { color: #ffc94d; margin-right: 2px; }
+.dt-life { margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(122,178,214,.22); }
+.dt-life-title { font-size: 11px; color: var(--c-text-dim, #9FB6C9); margin-bottom: 16px; }
+.dt-life-bar { position: relative; height: 30px; margin: 0 10px 2px; }
+.dt-life-bar::before {
+  content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 2px;
+  background: linear-gradient(90deg, rgba(79,160,117,.65), rgba(122,178,214,.55));
+  border-radius: 2px;
+}
+.dt-life-dot {
+  position: absolute; top: 50%; transform: translate(-50%, -50%);
+  width: 9px; height: 9px; border-radius: 50%;
+  border: 1.5px solid rgba(160, 220, 180, .9); background: #0d1b2a;
+  cursor: pointer; padding: 0; z-index: 2;
+}
+.dt-life-dot:hover { transform: translate(-50%, -50%) scale(1.55); border-color: #8fe3b0; }
+.dt-life-dot.on { background: #5ec98f; box-shadow: 0 0 9px rgba(94, 201, 143, .85); }
+.dt-life-axis { position: absolute; top: 14px; font-size: 9.5px; color: var(--c-text-dim, #9FB6C9); }
+.dt-life-axis.l { left: 0; }
+.dt-life-axis.r { right: 0; }

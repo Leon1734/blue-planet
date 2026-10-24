@@ -220,3 +220,19 @@ const BP_DEEPTIME = [
 
 /* 深时按钮顺序（滑块索引，按时间从今到古） */
 const BP_DEEPTIME_ORDER = ['present', 'neogene', 'oligocene', 'eocene', 'cretaceous', 'jurassic', 'permian-triassic', 'carboniferous', 'devonian', 'silurian', 'ordovician', 'cambrian'];
+
+/* v24 生命演化里程碑（时间轴事件条；epoch = 点击后跳转的纪元） */
+const BP_DEEPTIME_LIFE = [
+  { ma: 541, t: '寒武纪生命大爆发：动物门类几乎全部登场', epoch: 'cambrian' },
+  { ma: 470, t: '植物首次登陆，大地披上绿装', epoch: 'ordovician' },
+  { ma: 385, t: '鱼形动物统治海洋，四足动物即将上陆', epoch: 'devonian' },
+  { ma: 340, t: '巨型石松森林广布，埋下今天的煤层', epoch: 'carboniferous' },
+  { ma: 252, t: '二叠纪末大灭绝：96% 海洋物种消失', epoch: 'permian-triassic' },
+  { ma: 230, t: '恐龙王朝启幕，哺乳动物祖先登场', epoch: 'permian-triassic' },
+  { ma: 170, t: '侏罗纪盛世：巨龙横行，始祖鸟起飞', epoch: 'jurassic' },
+  { ma: 66, t: '小行星撞击：恐龙灭绝，哺乳动物接棒', epoch: 'cretaceous' },
+  { ma: 50, t: '始新世极热后，鲸类重返大海', epoch: 'eocene' },
+  { ma: 28, t: '南极冻成冰盖，草原开始扩张', epoch: 'oligocene' },
+  { ma: 7, t: '非洲古猿下地直立行走', epoch: 'neogene' },
+  { ma: 0, t: '人类文明时代', epoch: 'present' },
+];

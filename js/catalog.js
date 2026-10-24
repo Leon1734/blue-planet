@@ -11,12 +11,14 @@ const BPCatalog = (() => {
   let filter = 'all';
   let query = '';
   let onlyUnvisited = false;   // v19：只看未点亮
+  let onlyFavs = false;        // v24：只看收藏
 
   function open() {
     /* 每次打开重置筛选与搜索，避免上次状态干扰 */
     filter = 'all';
     query = '';
     onlyUnvisited = false;
+    onlyFavs = false;
     const si = $('catSearch');
     if (si) si.value = '';
     $('catalogModal').classList.remove('hidden');
@@ -45,6 +47,13 @@ const BPCatalog = (() => {
       `<button class="cat-chip cat-only-unvisited${onlyUnvisited ? ' on' : ''}" id="catOnlyUnvisited">
         <span class="dot" style="background:var(--c-orange)"></span>只看未点亮<i>${left}</i>
       </button>`);
+    /* v24：只看收藏 */
+    const favSet = (typeof BPGame !== 'undefined' && BPGame.profile && BPGame.profile.favs) ? new Set(BPGame.profile.favs) : new Set();
+    const favN = BP_POIS.filter(p => favSet.has(p.id)).length;
+    box.insertAdjacentHTML('beforeend',
+      `<button class="cat-chip cat-only-favs${onlyFavs ? ' on' : ''}" id="catOnlyFavs">
+        <span class="dot" style="background:#ffc94d"></span>⭐ 收藏<i>${favN}</i>
+      </button>`);
     box.querySelectorAll('.cat-chip[data-m]').forEach(b => {
       b.addEventListener('click', () => {
         filter = b.dataset.m;
@@ -57,10 +66,16 @@ const BPCatalog = (() => {
       renderFilters();
       renderList();
     });
+    $('catOnlyFavs').addEventListener('click', () => {
+      onlyFavs = !onlyFavs;
+      renderFilters();
+      renderList();
+    });
   }
 
   function renderList() {
     const visited = (typeof BPGame !== 'undefined' && BPGame.profile) ? new Set(BPGame.profile.visited) : new Set();
+    const favSet = (typeof BPGame !== 'undefined' && BPGame.profile && BPGame.profile.favs) ? new Set(BPGame.profile.favs) : new Set();
     const q = query.trim().toLowerCase();
     const match = (p) => {
       if (!q) return true;
@@ -76,6 +91,7 @@ const BPCatalog = (() => {
     const list = BP_POIS.filter(p =>
       (filter === 'all' || p.module === filter) &&
       (!onlyUnvisited || !visited.has(p.id)) &&
+      (!onlyFavs || favSet.has(p.id)) &&
       match(p));
 
     const box = $('catList');
@@ -103,7 +119,7 @@ const BPCatalog = (() => {
           const on = visited.has(p.id);
           return `<button class="cat-item${on ? ' visited' : ''}" data-poi="${p.id}" title="${p.summary.replace(/"/g, '&quot;')}">
             <span class="cat-item-title">${p.title}</span>
-            <span class="cat-item-meta">${'★'.repeat(p.difficulty)}${on ? '<b class="cat-ok">✓</b>' : ''}</span>
+            <span class="cat-item-meta">${favSet.has(p.id) ? '<b class="cat-fav">⭐</b>' : ''}${'★'.repeat(p.difficulty)}${on ? '<b class="cat-ok">✓</b>' : ''}</span>
           </button>`;
         }).join('') +
         `</div></div>`;

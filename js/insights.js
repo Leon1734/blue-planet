@@ -133,6 +133,12 @@ const BPInsights = (() => {
       L.push(`${mod.name}：${done}/${all.length}（${pct.toFixed(0)}%）${bar(pct)}`);
     }
     L.push('');
+    const favList = (pf.favs || []).map(id => BP_POIS.find(p => p.id === id)).filter(Boolean);
+    if (favList.length) {
+      L.push('【我的收藏】');
+      favList.forEach((p, i) => L.push(`  ${i + 1}. ${p.title}`));
+      L.push('');
+    }
     L.push('【已探索知识点清单】');
     for (const mod of BP_MODULES) {
       const done = BP_POIS.filter(p => p.module === mod.id && vSet.has(p.id));

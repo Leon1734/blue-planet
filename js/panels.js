@@ -407,12 +407,38 @@ const BPPanels = (() => {
       });
       box.appendChild(b);
     }
+    /* v24 生命演化里程碑时间轴（与滑块同向：左=今，右=5.4 亿年前） */
+    const life = $('dtLife');
+    if (life && typeof BP_DEEPTIME_LIFE !== 'undefined') {
+      const MAXMA = 541;
+      life.innerHTML = '<div class="dt-life-title">🧬 生命演化里程碑 · 点击跳转纪元</div>' +
+        '<div class="dt-life-bar">' +
+        '<span class="dt-life-axis l">今</span><span class="dt-life-axis r">5.4 亿年前</span>' +
+        BP_DEEPTIME_LIFE.map(ev => {
+          const left = (ev.ma / MAXMA) * 100;
+          const label = (ev.ma ? ev.ma + ' 百万年前 · ' : '今 · ') + ev.t;
+          return `<button class="dt-life-dot" data-epoch="${ev.epoch}" style="left:${left.toFixed(1)}%" title="${label.replace(/"/g, '&quot;')}"></button>`;
+        }).join('') +
+        '</div>';
+      life.querySelectorAll('.dt-life-dot').forEach(b => {
+        b.addEventListener('click', () => {
+          const id = b.dataset.epoch;
+          stopDriftPlay();
+          if (!BPDeepTime.isActive) enterDt();
+          BPDeepTime.setEpoch(id, BPDeepTime.currentEpoch === id ? 0 : 2200);
+          syncDtActive(id);
+        });
+      });
+    }
   }
   /* v17 同步：按钮高亮 / 滑块位置 / 年代标签 */
   function syncDtActive(id) {
     document.querySelectorAll('.dt-epoch-btn').forEach(x => {
       const on = x.textContent.includes(BP_DEEPTIME.find(e => e.id === id).t);
       x.classList.toggle('on', on);
+    });
+    document.querySelectorAll('.dt-life-dot').forEach(d => {
+      d.classList.toggle('on', d.dataset.epoch === id);
     });
     const slider = $('dtSlider');
     const idx = BP_DEEPTIME_ORDER.indexOf(id);
