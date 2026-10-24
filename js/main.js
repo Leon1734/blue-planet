@@ -99,6 +99,11 @@
       if (!wasDown || dragging) return;
       if (performance.now() - wasDown.t > 450) return;   // 长按不算点击
       if (typeof BPRandom !== 'undefined') BPRandom.stop();   // 手动点击即接管，停止漫游
+      /* v23 测量模式优先：画布点击作为测量取点，不选 POI */
+      if (typeof BPMeasure !== 'undefined' && BPMeasure.isActive) {
+        BPMeasure.onTap(e.clientX, e.clientY);
+        return;
+      }
       const id = BPMarkers.raycastAt(e.clientX, e.clientY);
       if (id) selectPoi(id);
       else if (BPMarkers.getSelected()) deselectPoi();   // 点空处收起卡片
@@ -136,8 +141,11 @@
           BPRandom.stop();          // 手动接管即停漫游
           BPRandom.go();
         }
+      } else if (e.key === 'm' || e.key === 'M') {
+        if (typeof BPMeasure !== 'undefined') BPMeasure.toggle();
       } else if (e.key === 'Escape') {
         if (typeof BPRandom !== 'undefined') BPRandom.stop();
+        if (typeof BPMeasure !== 'undefined' && BPMeasure.isActive) { BPMeasure.toggle(false); return; }
         deselectPoi();
       } else if (/^[1-9]$/.test(e.key)) {
         const li = document.querySelectorAll('#moduleList li')[+e.key - 1];
@@ -270,6 +278,7 @@
     }
     BPLayers.update(dtSec);
     BPCutaway.update(dtSec);
+    if (typeof BPMeasure !== 'undefined') BPMeasure.update(nowSec);
 
     // 选中标记的标签跟随投影（悬停标签由 pointermove 驱动，优先级更高）
     const selId = BPMarkers.getSelected();

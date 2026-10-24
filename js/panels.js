@@ -127,6 +127,13 @@ const BPPanels = (() => {
     $('btnQuiz').addEventListener('click', () => { openQuiz(); });
     $('btnInsights').addEventListener('click', openInsights);
     $('btnBadges').addEventListener('click', openBadges);
+    /* v23 地理测量 */
+    const bm = $('btnMeasure');
+    if (bm && typeof BPMeasure !== 'undefined') {
+      bm.addEventListener('click', () => BPMeasure.toggle());
+      const mx = $('msClose');
+      if (mx) mx.addEventListener('click', () => BPMeasure.toggle(false));
+    }
   }
 
   /* ---------- 剖析模式 ---------- */

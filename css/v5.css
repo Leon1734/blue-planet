@@ -271,3 +271,28 @@
   font-size: 18px; color: var(--c-text-dim, #9FB6C9);
   letter-spacing: 4px; font-weight: 400;
 }
+
+/* ===== v23 地理测量面板 ===== */
+#measurePanel {
+  position: fixed; left: 12px; bottom: 76px; z-index: 26;
+  width: min(400px, calc(100vw - 24px));
+  background: var(--c-panel-solid, #12233a);
+  border: 1px solid var(--c-line); border-radius: 14px;
+  padding: 12px 14px; box-shadow: 0 8px 32px rgba(0,0,0,.45);
+  font-size: 12.5px; color: var(--c-text, #E8F1F8);
+}
+.ms-head { display: flex; justify-content: space-between; align-items: center; font-weight: 600; margin-bottom: 8px; }
+.ms-head button { background: none; border: none; color: var(--c-text-dim, #9FB6C9); cursor: pointer; font-size: 14px; padding: 2px 6px; }
+.ms-pts { line-height: 1.7; color: var(--c-text-dim, #9FB6C9); }
+.ms-a { color: #53d769; }
+.ms-b { color: #ff9d4d; }
+.ms-wait { opacity: .7; }
+.ms-dist { margin: 8px 0 4px; font-size: 14px; }
+.ms-dist b { color: #ffc069; font-size: 16px; }
+.ms-ctx { font-size: 11px; color: var(--c-text-dim, #9FB6C9); }
+#msProfile { margin-top: 6px; display: block; }
+.ms-note { margin-top: 6px; font-size: 10.5px; color: var(--c-text-dim, #9FB6C9); opacity: .8; }
+.tool-btn.on { border-color: var(--c-green); background: rgba(61,190,139,.18); }
+@media (max-width: 768px) {
+  #measurePanel { bottom: 96px; left: 8px; }
+}

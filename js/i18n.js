@@ -12,7 +12,7 @@ const BPi18n = (() => {
   const DICT = {
     zh: {
       cutaway: '剖析', tours: '巡礼', deeptime: '深时', puzzle: '拼图', lab: '实验',
-      quiz: '闯关', insights: '看板', badges: '徽章', assistant: '助手', random: '随机',
+      quiz: '闯关', insights: '看板', badges: '徽章', assistant: '助手', random: '随机', measure: '测量',
       interior: '地球内部', plates: '板块与地震', volcano: '火山', ocean: '海洋与洋流',
       climate: '大气与气候', landform: '地貌与河流', polar: '极地与冰川', human: '人类与地球', earth: '地球档案',
       lblLabels: '地名', lblRivers: '河流', lblCurrents: '洋流', lblWinds: '风带',
@@ -25,7 +25,7 @@ const BPi18n = (() => {
     },
     en: {
       cutaway: 'Core', tours: 'Tours', deeptime: 'DeepTime', puzzle: 'Puzzle', lab: 'Lab',
-      quiz: 'Quiz', insights: 'Charts', badges: 'Badges', assistant: 'Ask', random: 'Random',
+      quiz: 'Quiz', insights: 'Charts', badges: 'Badges', assistant: 'Ask', random: 'Random', measure: 'Measure',
       interior: 'Interior', plates: 'Plates', volcano: 'Volcanoes', ocean: 'Oceans',
       climate: 'Climate', landform: 'Landforms', polar: 'Polar', human: 'Human Age', earth: 'Earth File',
       lblLabels: 'Names', lblRivers: 'Rivers', lblCurrents: 'Currents', lblWinds: 'Winds',
@@ -54,7 +54,7 @@ const BPi18n = (() => {
 
   function apply() {
     /* 工具条 */
-    const toolMap = { btnCutaway: 'cutaway', btnTours: 'tours', btnDeeptime: 'deeptime', btnPuzzle: 'puzzle', btnLab: 'lab', btnQuiz: 'quiz', btnInsights: 'insights', btnBadges: 'badges', btnAssistant: 'assistant', btnRandom: 'random' };
+    const toolMap = { btnCutaway: 'cutaway', btnTours: 'tours', btnDeeptime: 'deeptime', btnPuzzle: 'puzzle', btnLab: 'lab', btnMeasure: 'measure', btnQuiz: 'quiz', btnInsights: 'insights', btnBadges: 'badges', btnAssistant: 'assistant', btnRandom: 'random' };
     for (const [id, key] of Object.entries(toolMap)) {
       const btn = document.getElementById(id);
       if (!btn) continue;
