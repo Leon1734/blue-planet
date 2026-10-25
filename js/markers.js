@@ -97,6 +97,27 @@ const BPMarkers = (() => {
     return visitedTex;
   }
 
+  /* v25 收藏金星贴图（⭐ 角标，带金色描边光晕） */
+  let favTex = null;
+  function makeFavTex() {
+    if (favTex) return favTex;
+    const S = 56, c = document.createElement('canvas');
+    c.width = c.height = S;
+    const ctx = c.getContext('2d');
+    const g = ctx.createRadialGradient(S / 2, S / 2, 2, S / 2, S / 2, S / 2);
+    g.addColorStop(0, 'rgba(255,214,74,0.95)');
+    g.addColorStop(0.55, 'rgba(255,214,74,0.35)');
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, S, S);
+    ctx.font = '30px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('⭐', S / 2, S / 2 + 2);
+    favTex = new THREE.CanvasTexture(c);
+    return favTex;
+  }
+
   /* 按模块共享的材质（beam/sprite），环材质每标记独立（脉冲动画） */
   const moduleMats = {};
 
@@ -178,6 +199,16 @@ const BPMarkers = (() => {
         && BPGame.profile && BPGame.profile.visited.includes(poi.id);
       group.add(star);
 
+      /* v25 收藏金星（左上侧角标，与打卡金环对称） */
+      const favStar = new THREE.Sprite(new THREE.SpriteMaterial({
+        map: makeFavTex(), transparent: true, depthWrite: false,
+      }));
+      favStar.scale.setScalar(2.6);
+      favStar.position.set(-1.7, BEAM_H + 1.8, 0);
+      favStar.visible = (typeof BPGame !== 'undefined')
+        && BPGame.profile && (BPGame.profile.favs || []).includes(poi.id);
+      group.add(favStar);
+
       /* 拾取球（全透明但可见性为 true，保证 Raycaster 命中） */
       const hit = new THREE.Mesh(
         new THREE.SphereGeometry(HIT_R, 8, 6),
@@ -188,7 +219,7 @@ const BPMarkers = (() => {
       group.add(hit);
 
       BPScene.earthGroup.add(group);
-      const m = { poi, group, beam, ring, ring2, dot, star, hit, matRing, matRing2, phase: i * 0.37, baseScale: 1 };
+      const m = { poi, group, beam, ring, ring2, dot, star, favStar, hit, matRing, matRing2, phase: i * 0.37, baseScale: 1 };
       markers.push(m);
       byId.set(poi.id, m);
     });
@@ -198,6 +229,12 @@ const BPMarkers = (() => {
   function setVisited(id) {
     const m = byId.get(id);
     if (m) m.star.visible = true;
+  }
+
+  /* v25 收藏角标开关 */
+  function setFav(id, on) {
+    const m = byId.get(id);
+    if (m) m.favStar.visible = !!on;
   }
 
   /* ---------- 射线拾取 ---------- */
@@ -280,7 +317,7 @@ const BPMarkers = (() => {
   }
 
   return {
-    build, raycastAt, animate, getScreenXY, refreshAll, setVisited,
+    build, raycastAt, animate, getScreenXY, refreshAll, setVisited, setFav,
     set onHover(fn) { cb.onHover = fn; },
     set onSelect(fn) { cb.onSelect = fn; },
     setHovered(id) {

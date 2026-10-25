@@ -7,10 +7,10 @@
 <title>蓝色星球 · BluePlanet — 地球地理科普</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="css/style.css?v=bp45">
-<link rel="stylesheet" href="css/modules.css?v=bp45">
-<link rel="stylesheet" href="css/v3.css?v=bp45">
-<link rel="stylesheet" href="css/v5.css?v=bp45">
+<link rel="stylesheet" href="css/style.css?v=bp46">
+<link rel="stylesheet" href="css/modules.css?v=bp46">
+<link rel="stylesheet" href="css/v3.css?v=bp46">
+<link rel="stylesheet" href="css/v5.css?v=bp46">
 <meta name="theme-color" content="#0D1B2A">
 </head>
 <body>
@@ -85,6 +85,7 @@
 <div id="dtPanel" class="hidden">
   <div class="cut-head">
     <span class="cut-title">🦕 深时地球</span>
+    <button id="dtVoice" class="chip-btn" title="开关纪元语音旁白">🔊 旁白</button>
     <button id="dtPlay" class="chip-btn">▶ 播放漂移</button>
     <button id="dtExit" class="chip-btn warn">回到现代</button>
   </div>
@@ -368,6 +369,7 @@
   <div class="card-ai hidden" id="cardAiImg"></div>
   <div class="card-foot">
     <span class="card-coord" id="cardCoord"></span>
+    <button id="cardSpeak" class="chip-btn" title="朗读本知识点（标题+摘要）">🔊 朗读</button>
     <button id="cardFav" class="chip-btn" title="收藏本知识点">☆ 收藏</button>
     <button id="cardShare" class="chip-btn hidden" title="复制本知识点链接">🔗 分享链接</button>
     <button id="cardPrint" class="chip-btn" title="打印本知识点">🖨 打印</button>
@@ -380,32 +382,33 @@
 <script src="js/lib/OrbitControls.js"></script>
 <script>
 /* N1①：http(s) 环境跳过 1.2MB 内嵌贴图（直接加载 textures/ 真实文件），file:// 才内嵌 */
-if (location.protocol === 'file:') document.write('<script src="js/textures-data.js?v=bp45"><\/script>');
+if (location.protocol === 'file:') document.write('<script src="js/textures-data.js?v=bp46"><\/script>');
 </script>
-<script src="js/data.js?v=bp45"></script>
-<script src="js/textures.js?v=bp45"></script>
-<script src="js/scene.js?v=bp45"></script>
-<script src="js/markers.js?v=bp45"></script>
-<script src="js/labels.js?v=bp45"></script>
-<script src="js/figures.js?v=bp45"></script>
-<script src="js/layers.js?v=bp45"></script>
-<script src="js/cutaway.js?v=bp45"></script>
-<script src="js/tours.js?v=bp45"></script>
-<script src="js/game.js?v=bp45"></script>
-<script src="js/insights.js?v=bp45"></script>
-<script src="js/search.js?v=bp45"></script>
-<script src="js/assistant.js?v=bp45"></script>
-<script src="js/lab.js?v=bp45"></script>
-<script src="js/measure.js?v=bp45"></script>
-<script src="js/random.js?v=bp45"></script>
-<script src="js/quakes.js?v=bp45"></script>
-<script src="js/deeptime-data.js?v=bp45"></script>
-<script src="js/deeptime.js?v=bp45"></script>
-<script src="js/puzzle.js?v=bp45"></script>
-<script src="js/panels.js?v=bp45"></script>
-<script src="js/catalog.js?v=bp45"></script>
-<script src="js/i18n.js?v=bp45"></script>
-<script src="js/ui.js?v=bp45"></script>
-<script src="js/main.js?v=bp45"></script>
+<script src="js/data.js?v=bp46"></script>
+<script src="js/textures.js?v=bp46"></script>
+<script src="js/scene.js?v=bp46"></script>
+<script src="js/markers.js?v=bp46"></script>
+<script src="js/labels.js?v=bp46"></script>
+<script src="js/figures.js?v=bp46"></script>
+<script src="js/layers.js?v=bp46"></script>
+<script src="js/cutaway.js?v=bp46"></script>
+<script src="js/tours.js?v=bp46"></script>
+<script src="js/game.js?v=bp46"></script>
+<script src="js/insights.js?v=bp46"></script>
+<script src="js/search.js?v=bp46"></script>
+<script src="js/assistant.js?v=bp46"></script>
+<script src="js/lab.js?v=bp46"></script>
+<script src="js/measure.js?v=bp46"></script>
+<script src="js/random.js?v=bp46"></script>
+<script src="js/quakes.js?v=bp46"></script>
+<script src="js/deeptime-data.js?v=bp46"></script>
+<script src="js/deeptime.js?v=bp46"></script>
+<script src="js/puzzle.js?v=bp46"></script>
+<script src="js/panels.js?v=bp46"></script>
+<script src="js/catalog.js?v=bp46"></script>
+<script src="js/tts.js?v=bp46"></script>
+<script src="js/i18n.js?v=bp46"></script>
+<script src="js/ui.js?v=bp46"></script>
+<script src="js/main.js?v=bp46"></script>
 </body>
 </html>

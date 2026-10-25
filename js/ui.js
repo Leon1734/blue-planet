@@ -160,6 +160,26 @@ const BPUI = (() => {
     const latStr = `${Math.abs(poi.lat).toFixed(1)}°${poi.lat >= 0 ? 'N' : 'S'}`;
     const lonStr = `${Math.abs(poi.lon).toFixed(1)}°${poi.lon >= 0 ? 'E' : 'W'}`;
     $('cardCoord').textContent = `${latStr}, ${lonStr}`;
+    /* v25 朗读按钮：标题+摘要；再点停止；关卡片自动停 */
+    const spBtn = $('cardSpeak');
+    if (spBtn) {
+      spBtn.classList.remove('on');
+      spBtn.textContent = '🔊 朗读';
+      spBtn.onclick = () => {
+        if (typeof BPTTS === 'undefined') { spBtn.textContent = '🔇 不支持'; return; }
+        if (spBtn.classList.contains('on')) {
+          BPTTS.stop();
+          spBtn.classList.remove('on');
+          spBtn.textContent = '🔊 朗读';
+          return;
+        }
+        const started = BPTTS.speak(`${poi.title}。${poi.summary}`, {
+          onend: () => { spBtn.classList.remove('on'); spBtn.textContent = '🔊 朗读'; },
+        });
+        if (started) { spBtn.classList.add('on'); spBtn.textContent = '⏹ 停止'; }
+        else spBtn.textContent = '🔇 不支持';
+      };
+    }
     /* v24 收藏按钮 */
     const favBtn = $('cardFav');
     if (favBtn) {
@@ -171,6 +191,8 @@ const BPUI = (() => {
         const now = BPGame.toggleFav(poi.id);
         favBtn.textContent = now ? '⭐ 已收藏' : '☆ 收藏';
         favBtn.classList.toggle('on', now);
+        /* v25 球面金星角标同步 */
+        if (typeof BPMarkers !== 'undefined' && BPMarkers.setFav) BPMarkers.setFav(poi.id, now);
       };
     }
     /* v20 分享按钮 */
@@ -363,7 +385,10 @@ const BPUI = (() => {
     buildDay24();
     buildToday();
 
-    $('cardClose').addEventListener('click', () => { if (cb.onCardClose) cb.onCardClose(); });
+    $('cardClose').addEventListener('click', () => {
+      if (typeof BPTTS !== 'undefined') BPTTS.stop();
+      if (cb.onCardClose) cb.onCardClose();
+    });
     $('cardNext').addEventListener('click', () => { if (cb.onCardNext) cb.onCardNext(); });
     const pr = $('cardPrint');
     if (pr) pr.addEventListener('click', () => window.print());

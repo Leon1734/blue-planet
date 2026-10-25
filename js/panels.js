@@ -65,9 +65,24 @@ const BPPanels = (() => {
     /* v6 深时古地球 */
     buildDeeptime();
     $('btnDeeptime').addEventListener('click', toggleDeeptime);
-    $('dtExit').addEventListener('click', () => { stopDriftPlay(); toggleDeeptime(); });
+    $('dtExit').addEventListener('click', () => { stopDriftPlay(); if (typeof BPTTS !== 'undefined') BPTTS.stop(); toggleDeeptime(); });
     $('dtPlay').addEventListener('click', toggleDriftPlay);
-    BPDeepTime.onEpoch = (epoch) => renderDtInfo(epoch);
+    /* v25 纪元语音旁白（默认关，会话内记忆） */
+    let dtVoiceOn = false;
+    const dv = $('dtVoice');
+    if (dv) dv.addEventListener('click', () => {
+      dtVoiceOn = !dtVoiceOn;
+      dv.classList.toggle('on', dtVoiceOn);
+      dv.textContent = dtVoiceOn ? '🔊 旁白中' : '🔊 旁白';
+      if (!dtVoiceOn && typeof BPTTS !== 'undefined') BPTTS.stop();
+    });
+    BPDeepTime.onEpoch = (epoch) => {
+      renderDtInfo(epoch);
+      if (dtVoiceOn && typeof BPTTS !== 'undefined') {
+        const years = epoch.ma ? `距今约${epoch.ma}百万年。` : '现代。';
+        BPTTS.speak(`${epoch.t}。${years}${epoch.brief}。${epoch.life}`);
+      }
+    };
     /* v22 纪元切换大字标题覆盖层 */
     BPDeepTime.onEpochShow = (epoch) => {
       const ov = $('dtEpochOverlay');
