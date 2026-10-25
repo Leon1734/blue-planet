@@ -67,8 +67,9 @@ const BPPanels = (() => {
     $('btnDeeptime').addEventListener('click', toggleDeeptime);
     $('dtExit').addEventListener('click', () => { stopDriftPlay(); if (typeof BPTTS !== 'undefined') BPTTS.stop(); toggleDeeptime(); });
     $('dtPlay').addEventListener('click', toggleDriftPlay);
-    /* v25 纪元语音旁白（默认关，会话内记忆） */
+    /* v25 纪元语音旁白（默认关，会话内记忆；v28 节流：漂移连播时不连环打断） */
     let dtVoiceOn = false;
+    let dtLastNarr = 0;
     const dv = $('dtVoice');
     if (dv) dv.addEventListener('click', () => {
       dtVoiceOn = !dtVoiceOn;
@@ -79,6 +80,9 @@ const BPPanels = (() => {
     BPDeepTime.onEpoch = (epoch) => {
       renderDtInfo(epoch);
       if (dtVoiceOn && typeof BPTTS !== 'undefined') {
+        const now = performance.now();
+        if (now - dtLastNarr < 6000) return;   // 上一段还没讲 6 秒不抢话
+        dtLastNarr = now;
         const years = epoch.ma ? `距今约${epoch.ma}百万年。` : '现代。';
         BPTTS.speak(`${epoch.t}。${years}${epoch.brief}。${epoch.life}`);
       }
