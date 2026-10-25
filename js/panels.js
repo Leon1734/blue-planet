@@ -254,17 +254,38 @@ const BPPanels = (() => {
   }
 
   /* ---------- 知识闯关 ---------- */
+  /* v26 打开即选范围：全部 / 九大模块，选后开始 */
   function openQuiz() {
-    BPGame.startQuiz();
     $('quizModal').classList.remove('hidden');
-    renderQuiz();
+    renderQuizPicker();
+  }
+  function renderQuizPicker() {
+    const box = $('quizBody');
+    const counts = {};
+    BP_QUIZ.forEach(q => { counts[q.m] = (counts[q.m] || 0) + 1; });
+    const chips = [{ id: '', name: '🌍 全部混抽', color: '#E8F1F8', n: BP_QUIZ.length }]
+      .concat(BP_MODULES.map(m => ({ id: m.id, name: m.name, color: m.color, n: counts[m.id] || 0 })));
+    box.innerHTML =
+      `<div class="quiz-pick-title">🎯 选择挑战范围</div>` +
+      `<div class="quiz-pick-sub">每个范围随机 10 题，答完看解析</div>` +
+      `<div class="cat-filters quiz-filters">` + chips.map(c =>
+        `<button class="cat-chip" data-m="${c.id}">
+          <span class="dot" style="background:${c.color}"></span>${c.name}<i>${c.n} 题</i>
+        </button>`).join('') + `</div>`;
+    box.querySelectorAll('.cat-chip[data-m]').forEach(b => {
+      b.addEventListener('click', () => {
+        BPGame.startQuiz(b.dataset.m || undefined);
+        renderQuiz();
+      });
+    });
   }
   function renderQuiz() {
     const q = BPGame.quizState;
     const box = $('quizBody');
     if (!q) { box.innerHTML = ''; return; }
+    const modName = q.moduleId ? ((BP_MODULES.find(m => m.id === q.moduleId) || {}).name || '') : '';
     box.innerHTML =
-      `<div class="quiz-progress">第 ${q.idx + 1} / ${q.qs.length} 题 · 答对 ${q.score}</div>` +
+      `<div class="quiz-progress">${modName ? modName + ' · ' : ''}第 ${q.idx + 1} / ${q.qs.length} 题 · 答对 ${q.score}</div>` +
       `<div class="quiz-q">${q.qs[q.idx].q}</div>` +
       `<div class="quiz-opts">${q.qs[q.idx].a.map((a, i) =>
         `<button class="quiz-opt" data-i="${i}">${String.fromCharCode(65 + i)}. ${a}</button>`).join('')}</div>` +
@@ -295,17 +316,22 @@ const BPPanels = (() => {
   }
   function renderQuizResult(res) {
     const box = $('quizBody');
+    const modName = res.moduleId ? ((BP_MODULES.find(m => m.id === res.moduleId) || {}).name || '') : '全部范围';
     box.innerHTML =
       `<div class="quiz-result">
+        <div class="quiz-scope">${modName} · 闯关完成</div>
         <div class="quiz-score">${res.score}<i>/${res.total}</i></div>
         <div class="quiz-verdict">${res.score === res.total ? '🏆 满分！地理学家就是你了' :
           res.score >= 6 ? '🎉 不错的基础，继续探索！' : '📖 多点点光柱再来挑战！'}</div>
         <div class="quiz-best">历史最佳：${BPGame.profile.quizBest} 分</div>
         <div class="quiz-actions">
-          <button class="chip-btn" id="quizAgain">再来一轮</button>
+          ${res.moduleId ? `<button class="chip-btn" id="quizAgainMod">再战本模块</button>` : ''}
+          <button class="chip-btn" id="quizAgain">换个范围</button>
           <button class="chip-btn warn" id="quizClose2">关闭</button>
         </div>
       </div>`;
+    const am = $('quizAgainMod');
+    if (am) am.addEventListener('click', () => { BPGame.startQuiz(res.moduleId); renderQuiz(); });
     $('quizAgain').addEventListener('click', openQuiz);
     $('quizClose2').addEventListener('click', closeModal);
     res.fresh.forEach(b => {

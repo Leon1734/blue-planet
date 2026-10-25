@@ -95,15 +95,16 @@ const BPGame = (() => {
   }
 
   /* ---------- 知识闯关 ---------- */
-  let quiz = null;   // { qs, idx, score, answered }
-  function startQuiz() {
-    const pool = [...BP_QUIZ];
-    // 洗牌取 10
+  let quiz = null;   // { qs, idx, score, answered, moduleId }
+  /* v26 按模块出题：moduleId 为空 = 全部题库混抽 */
+  function startQuiz(moduleId) {
+    const pool = [...(moduleId ? BP_QUIZ.filter(q => q.m === moduleId) : BP_QUIZ)];
+    // 洗牌取 10（题量不足时全用）
     for (let i = pool.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [pool[i], pool[j]] = [pool[j], pool[i]];
     }
-    quiz = { qs: pool.slice(0, 10), idx: 0, score: 0, answered: false };
+    quiz = { qs: pool.slice(0, 10), idx: 0, score: 0, answered: false, moduleId: moduleId || null };
   }
 
   function answerQuiz(opt) {
@@ -119,7 +120,7 @@ const BPGame = (() => {
     quiz.idx++;
     if (quiz.idx >= quiz.qs.length) {
       const fresh = markQuiz(quiz.score, quiz.qs.length);
-      const result = { done: true, score: quiz.score, total: quiz.qs.length, fresh };
+      const result = { done: true, score: quiz.score, total: quiz.qs.length, fresh, moduleId: quiz.moduleId };
       quiz = null;
       return result;
     }
