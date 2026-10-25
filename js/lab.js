@@ -242,6 +242,138 @@ const BPLab = (() => {
   }
 
   /* ================================================================
+     v29 大气三圈环流（北半球剖面：0° 赤道 → 90° 极地）
+     ================================================================ */
+  const atmo = { hover: null, t: 0 };
+  /* 纬度 → 画布 x；环流圈用闭合折线，粒子沿线匀速巡游 */
+  const AT_X0 = 70, AT_X1 = 590, AT_YLO = 282, AT_YHI = 96;
+  const latX = (lat) => AT_X0 + (lat / 90) * (AT_X1 - AT_X0);
+  function loopPath(a, b, dirRight) {
+    /* 近地面 y=AT_YLO，高空 y=AT_YHI；dirRight=true 顺时针（地面风向右） */
+    const xa = latX(a) + 8, xb = latX(b) - 8;
+    return dirRight
+      ? [[xa, AT_YLO], [xb, AT_YLO], [xb, AT_YHI], [xa, AT_YHI]]
+      : [[xb, AT_YLO], [xa, AT_YLO], [xa, AT_YHI], [xb, AT_YHI]];
+  }
+  const ATMO_CELLS = [
+    { id: 'hadley', name: '哈得来环流（热带）', color: '#F0954F', latA: 0, latB: 30, path: loopPath(0, 30, false),
+      wind: '东北信风', windDir: -1,
+      text: '赤道空气受热强烈上升（赤道低压带·ITCZ，雷雨倾盆），在高空流向副热带，在约 30° 下沉形成副热带高压——撒哈拉、阿拉伯、阿塔卡马等大沙漠恰好贴着 30° 纬线。近地面空气从 30° 流回赤道，被地转偏向力拧成东北信风，帆船时代"贸易风"由此得名。' },
+    { id: 'ferrel', name: '费雷尔环流（中纬度）', color: '#5FBF8F', latA: 30, latB: 60, path: loopPath(30, 60, true),
+      wind: '盛行西风', windDir: 1,
+      text: '中纬度的"被动齿轮"：副热带高压的空气在近地面流向副极地低压（60°），被偏向成盛行西风——它送来温带气旋与连绵雨带，也送远洋货轮和跨大西洋航班"搭顺风"。方向与两侧两圈相反，天气因此最多变。' },
+    { id: 'polar', name: '极地环流', color: '#6FA8DC', latA: 60, latB: 90, path: loopPath(60, 90, false),
+      wind: '极地东风', windDir: -1,
+      text: '极地空气冷而重，下沉形成极地高压；近地面空气从极点流向 60°，偏向成极地东风。冷气团在 60° 附近的副极地低压带与暖湿西风相遇，形成极锋——气旋风暴在这里排队东移，是北半球冬天雨雪的主要"生产线"。' },
+  ];
+  /* 粒子预置：每圈 26 颗，沿折线弧长参数化 */
+  const atmoParts = [];
+  for (const c of ATMO_CELLS) {
+    const segs = [];
+    let total = 0;
+    for (let i = 0; i < c.path.length; i++) {
+      const p1 = c.path[i], p2 = c.path[(i + 1) % c.path.length];
+      const len = Math.hypot(p2[0] - p1[0], p2[1] - p1[1]);
+      segs.push({ p1, p2, len, acc: total });
+      total += len;
+    }
+    for (let i = 0; i < 26; i++) {
+      atmoParts.push({ cell: c, segs, total, d: (i / 26) * total });
+    }
+  }
+  function atmoPoint(part) {
+    const d = ((part.d % part.total) + part.total) % part.total;
+    const seg = part.segs.find(s => d <= s.acc + s.len) || part.segs[0];
+    const t = (d - seg.acc) / seg.len;
+    return [seg.p1[0] + (seg.p2[0] - seg.p1[0]) * t, seg.p1[1] + (seg.p2[1] - seg.p1[1]) * t];
+  }
+
+  function atmoStep(ctx, w, h, dt) {
+    atmo.t += dt;
+    const SPD = 62;   // 粒子巡游速度 px/s
+    atmoParts.forEach(p => { p.d += SPD * dt; });
+
+    /* 背景 */
+    const sky = ctx.createLinearGradient(0, 0, 0, h);
+    sky.addColorStop(0, '#0a1826'); sky.addColorStop(1, '#12293c');
+    ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h);
+
+    /* 地表 */
+    ctx.fillStyle = '#1d3a2a';
+    ctx.fillRect(AT_X0 - 40, AT_YLO + 14, AT_X1 - AT_X0 + 80, h - AT_YLO - 14);
+    ctx.fillStyle = '#9FB6C9'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+    /* 纬度刻度 */
+    [[0, '0° 赤道'], [30, '30°'], [60, '60°'], [90, '90° 极点']].forEach(([la, t]) => {
+      const x = latX(la);
+      ctx.strokeStyle = 'rgba(122,178,214,0.25)';
+      ctx.beginPath(); ctx.moveTo(x, AT_YHI - 26); ctx.lineTo(x, AT_YLO + 14); ctx.stroke();
+      ctx.fillStyle = '#7FA6C9';
+      ctx.fillText(t, x, AT_YLO + 30);
+    });
+
+    /* 高空/近地面标线 */
+    ctx.setLineDash([5, 5]);
+    ctx.strokeStyle = 'rgba(122,178,214,0.3)';
+    ctx.beginPath(); ctx.moveTo(AT_X0, AT_YHI); ctx.lineTo(AT_X1, AT_YHI); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#57708a'; ctx.textAlign = 'left';
+    ctx.fillText('对流层高空', AT_X0 + 4, AT_YHI - 8);
+    ctx.fillText('近地面', AT_X0 + 4, AT_YLO - 8);
+
+    /* 三个环流圈：轨道 + 名称 */
+    for (const c of ATMO_CELLS) {
+      const on = atmo.hover === c.id;
+      ctx.strokeStyle = on ? c.color : 'rgba(122,178,214,0.28)';
+      ctx.lineWidth = on ? 2.5 : 1.2;
+      ctx.beginPath();
+      c.path.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
+      ctx.closePath(); ctx.stroke();
+      /* 圈名 */
+      ctx.fillStyle = on ? c.color : 'rgba(200,220,235,0.75)';
+      ctx.font = `${on ? 'bold ' : ''}12px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText(c.name, (latX(c.latA) + latX(c.latB)) / 2, (AT_YHI + AT_YLO) / 2 - 10);
+      /* 地面风带箭头与名称 */
+      const midX = (latX(c.latA) + latX(c.latB)) / 2;
+      const ax = midX + c.windDir * 34, bx = midX - c.windDir * 34;
+      ctx.strokeStyle = c.color; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(ax, AT_YLO - 2); ctx.lineTo(bx, AT_YLO - 2); ctx.stroke();
+      /* 箭头头部 */
+      ctx.beginPath();
+      ctx.moveTo(bx - c.windDir * 8, AT_YLO - 7);
+      ctx.lineTo(bx, AT_YLO - 2);
+      ctx.lineTo(bx - c.windDir * 8, AT_YLO + 3);
+      ctx.closePath(); ctx.fillStyle = c.color; ctx.fill();
+      ctx.fillStyle = c.color; ctx.font = 'bold 11.5px sans-serif';
+      ctx.fillText(c.wind, midX, AT_YLO - 46);
+    }
+
+    /* 气压带标注（顶部交错两行，避免相邻重叠） */
+    const belts = [
+      [0, '赤道低压带·雷雨', '#F0C34F'], [30, '副热带高压·干燥', '#D98F4F'],
+      [60, '副极地低压·风雨', '#6FB0D8'], [90, '极地高压·晴冷', '#9FC3E8'],
+    ];
+    belts.forEach(([la, t, col]) => {
+      const x = Math.max(latX(la), Math.min(w - 74, latX(la)));
+      const yName = (la === 0 || la === 60) ? 46 : 64;
+      ctx.fillStyle = col; ctx.font = 'bold 11px sans-serif';
+      ctx.fillText(t, x, yName);
+      ctx.font = '10.5px sans-serif';
+      ctx.fillText(la === 0 || la === 60 ? '↑ 上升' : '↓ 下沉', x, yName + 15);
+    });
+
+    /* 粒子 */
+    for (const p of atmoParts) {
+      const on = atmo.hover === p.cell.id;
+      const [x, y] = atmoPoint(p);
+      const bob = Math.sin(atmo.t * 3 + p.d * 0.1) * 1.5;
+      ctx.fillStyle = p.cell.color + (on ? 'ff' : 'cc');
+      ctx.beginPath(); ctx.arc(x, y + bob, on ? 3.2 : 2.4, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.textAlign = 'left';
+  }
+
+  /* ================================================================
      面板控制
      ================================================================ */
   function open() {
@@ -256,15 +388,17 @@ const BPLab = (() => {
     document.querySelectorAll('.lab-tab').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
     $('labVolcano').classList.toggle('hidden', t !== 'volcano');
     $('labPlate').classList.toggle('hidden', t !== 'plate');
+    $('labAtmo').classList.toggle('hidden', t !== 'atmo');
   }
 
   function loop() {
-    const cvName = tab === 'volcano' ? 'volcanoCanvas' : 'plateCanvas';
+    const cvName = tab === 'volcano' ? 'volcanoCanvas' : tab === 'plate' ? 'plateCanvas' : 'atmoCanvas';
     const cv = $(cvName);
     if (!cv || $('labModal').classList.contains('hidden')) { stopRaf(); return; }
     const ctx = cv.getContext('2d');
     if (tab === 'volcano') volStep(ctx, cv.width, cv.height, 1/60);
-    else plateStep(ctx, cv.width, cv.height, 1/60);
+    else if (tab === 'plate') plateStep(ctx, cv.width, cv.height, 1/60);
+    else atmoStep(ctx, cv.width, cv.height, 1/60);
     volRaf = plateRaf = requestAnimationFrame(loop);
   }
   function startRaf() { stopRaf(); loop(); }
@@ -309,6 +443,34 @@ const BPLab = (() => {
     const endDrag = () => { pl.drag = null; };
     pc.addEventListener('pointerup', endDrag);
     pc.addEventListener('pointercancel', endDrag);
+
+    /* v29 大气环流：悬停到某一圈 → 讲解 */
+    const ac = $('atmoCanvas');
+    if (ac) {
+      const infoOf = (x, w) => {
+        const lat = ((x - AT_X0) / (AT_X1 - AT_X0)) * 90;
+        return ATMO_CELLS.find(c => lat >= c.latA && lat <= c.latB) || null;
+      };
+      const setHover = (e) => {
+        const r = ac.getBoundingClientRect();
+        const x = (e.clientX - r.left) * (ac.width / r.width);
+        const cell = infoOf(x, ac.width);
+        atmo.hover = cell ? cell.id : null;
+        ac.style.cursor = cell ? 'pointer' : 'default';
+        const info = $('atmoInfo');
+        if (info) {
+          info.innerHTML = cell
+            ? `<b style="color:${cell.color}">${cell.name}（${cell.latA}°~${cell.latB}°）</b>：${cell.text}`
+            : '原理：太阳把赤道烤热、两极冷却，温差驱动出三个"传送带"——悬停到任意一圈查看详解。';
+        }
+      };
+      ac.addEventListener('pointermove', setHover);
+      ac.addEventListener('pointerleave', () => {
+        atmo.hover = null;
+        const info = $('atmoInfo');
+        if (info) info.innerHTML = '原理：太阳把赤道烤热、两极冷却，温差驱动出三个"传送带"——悬停到任意一圈查看详解。';
+      });
+    }
   }
 
   return { wire, open, close };
