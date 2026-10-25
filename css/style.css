@@ -477,3 +477,6 @@ body.chat-open #moduleNav { max-height: calc(100vh - 180px); }
   #poiCard .card-tags span { border: 1px solid #999 !important; }
   #poiCard img, #poiCard svg { max-width: 100%; }
 }
+
+/* v27 卡片底部按钮增多，允许换行 */
+.card-foot { flex-wrap: wrap; gap: 6px 8px; row-gap: 6px; }

@@ -180,6 +180,11 @@ const BPUI = (() => {
         else spBtn.textContent = '🔇 不支持';
       };
     }
+    /* v27 明信片：当前地球视图 + 知识点合成竖版 PNG */
+    const pcBtn = $('cardPostcard');
+    if (pcBtn) pcBtn.onclick = () => {
+      if (typeof BPPostcard !== 'undefined') BPPostcard.make(poi);
+    };
     /* v24 收藏按钮 */
     const favBtn = $('cardFav');
     if (favBtn) {

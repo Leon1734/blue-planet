@@ -5,7 +5,7 @@
    版本号随 ?v= 一起升级（当前 bp8）。
    ============================================================ */
 
-const CACHE = 'blueplanet-v28';
+const CACHE = 'blueplanet-v29';
 const ASSETS = [
   './',
   './index.html',
@@ -41,6 +41,7 @@ const ASSETS = [
   './js/puzzle.js',
   './js/catalog.js',
   './js/tts.js',
+  './js/postcard.js',
   './js/ui.js',
   './js/main.js',
   './manifest.webmanifest',
