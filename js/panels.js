@@ -282,14 +282,27 @@ const BPPanels = (() => {
         renderQuiz();
       });
     });
+    /* v30 错题重练入口（有错题才显示） */
+    const wrongN = Object.keys(BPGame.profile.wrong || {}).length;
+    if (wrongN > 0) {
+      box.insertAdjacentHTML('beforeend',
+        `<div class="quiz-wrong-row">
+          <button class="chip-btn warn" id="quizWrongGo">📕 错题重练（${wrongN} 道待攻克）</button>
+        </div>`);
+      $('quizWrongGo').addEventListener('click', () => {
+        BPGame.startQuiz(null, { wrong: true });
+        renderQuiz();
+      });
+    }
   }
   function renderQuiz() {
     const q = BPGame.quizState;
     const box = $('quizBody');
     if (!q) { box.innerHTML = ''; return; }
-    const modName = q.moduleId ? ((BP_MODULES.find(m => m.id === q.moduleId) || {}).name || '') : '';
+    const label = q.wrongMode ? '📕 错题重练'
+      : (q.moduleId ? ((BP_MODULES.find(m => m.id === q.moduleId) || {}).name || '') : '');
     box.innerHTML =
-      `<div class="quiz-progress">${modName ? modName + ' · ' : ''}第 ${q.idx + 1} / ${q.qs.length} 题 · 答对 ${q.score}</div>` +
+      `<div class="quiz-progress">${label ? label + ' · ' : ''}第 ${q.idx + 1} / ${q.qs.length} 题 · 答对 ${q.score}</div>` +
       `<div class="quiz-q">${q.qs[q.idx].q}</div>` +
       `<div class="quiz-opts">${q.qs[q.idx].a.map((a, i) =>
         `<button class="quiz-opt" data-i="${i}">${String.fromCharCode(65 + i)}. ${a}</button>`).join('')}</div>` +
@@ -320,16 +333,21 @@ const BPPanels = (() => {
   }
   function renderQuizResult(res) {
     const box = $('quizBody');
-    const modName = res.moduleId ? ((BP_MODULES.find(m => m.id === res.moduleId) || {}).name || '') : '全部范围';
+    const scopeName = res.wrongMode ? '错题重练'
+      : (res.moduleId ? ((BP_MODULES.find(m => m.id === res.moduleId) || {}).name || '') : '全部范围');
+    const wrongLine = res.wrongMode
+      ? (res.wrongLeft === 0 ? '🎉 错题本已清空！' : `错题本还剩 ${res.wrongLeft} 道`)
+      : '';
     box.innerHTML =
       `<div class="quiz-result">
-        <div class="quiz-scope">${modName} · 闯关完成</div>
+        <div class="quiz-scope">${scopeName} · 闯关完成</div>
         <div class="quiz-score">${res.score}<i>/${res.total}</i></div>
         <div class="quiz-verdict">${res.score === res.total ? '🏆 满分！地理学家就是你了' :
           res.score >= 6 ? '🎉 不错的基础，继续探索！' : '📖 多点点光柱再来挑战！'}</div>
+        ${wrongLine ? `<div class="quiz-wrong-line">${wrongLine}</div>` : ''}
         <div class="quiz-best">历史最佳：${BPGame.profile.quizBest} 分</div>
         <div class="quiz-actions">
-          ${res.moduleId ? `<button class="chip-btn" id="quizAgainMod">再战本模块</button>` : ''}
+          ${res.moduleId && !res.wrongMode ? `<button class="chip-btn" id="quizAgainMod">再战本模块</button>` : ''}
           <button class="chip-btn" id="quizAgain">换个范围</button>
           <button class="chip-btn warn" id="quizClose2">关闭</button>
         </div>

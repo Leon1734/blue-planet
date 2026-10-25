@@ -9,7 +9,7 @@
 const BPGame = (() => {
 
   const KEY = 'bp_profile_v1';
-  let profile = { visited: [], favs: [], badges: [], quizBest: 0 };
+  let profile = { visited: [], favs: [], badges: [], quizBest: 0, wrong: {} };
 
   /* ---------- 档案 ---------- */
   function load() {
@@ -95,24 +95,37 @@ const BPGame = (() => {
   }
 
   /* ---------- 知识闯关 ---------- */
-  let quiz = null;   // { qs, idx, score, answered, moduleId }
-  /* v26 按模块出题：moduleId 为空 = 全部题库混抽 */
-  function startQuiz(moduleId) {
-    const pool = [...(moduleId ? BP_QUIZ.filter(q => q.m === moduleId) : BP_QUIZ)];
+  let quiz = null;   // { qs, idx, score, answered, moduleId, wrongMode }
+  /* v26 按模块出题：moduleId 为空 = 全部题库混抽；opts.wrong = 错题重练 */
+  function startQuiz(moduleId, opts = {}) {
+    let pool;
+    if (opts.wrong) {
+      pool = BP_QUIZ.filter(q => profile.wrong && profile.wrong[q.q]);
+      if (!pool.length) return;   // 没有错题就不开
+    } else {
+      pool = [...(moduleId ? BP_QUIZ.filter(q => q.m === moduleId) : BP_QUIZ)];
+    }
     // 洗牌取 10（题量不足时全用）
     for (let i = pool.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [pool[i], pool[j]] = [pool[j], pool[i]];
     }
-    quiz = { qs: pool.slice(0, 10), idx: 0, score: 0, answered: false, moduleId: moduleId || null };
+    quiz = { qs: pool.slice(0, 10), idx: 0, score: 0, answered: false,
+      moduleId: moduleId || null, wrongMode: !!opts.wrong };
   }
 
   function answerQuiz(opt) {
     if (!quiz || quiz.answered) return null;
     quiz.answered = true;
-    const ok = opt === quiz.qs[quiz.idx].c;
+    const q = quiz.qs[quiz.idx];
+    const ok = opt === q.c;
     if (ok) quiz.score++;
-    return { ok, correct: quiz.qs[quiz.idx].c };
+    /* v30 错题本：答错入本；错题重练答对即销账 */
+    profile.wrong = profile.wrong || {};
+    if (!ok) profile.wrong[q.q] = (profile.wrong[q.q] || 0) + 1;
+    else if (quiz.wrongMode) delete profile.wrong[q.q];
+    save();
+    return { ok, correct: q.c };
   }
   function nextQuiz() {
     if (!quiz) return false;
@@ -120,7 +133,9 @@ const BPGame = (() => {
     quiz.idx++;
     if (quiz.idx >= quiz.qs.length) {
       const fresh = markQuiz(quiz.score, quiz.qs.length);
-      const result = { done: true, score: quiz.score, total: quiz.qs.length, fresh, moduleId: quiz.moduleId };
+      const result = { done: true, score: quiz.score, total: quiz.qs.length, fresh,
+        moduleId: quiz.moduleId, wrongMode: quiz.wrongMode,
+        wrongLeft: Object.keys(profile.wrong || {}).length };
       quiz = null;
       return result;
     }
