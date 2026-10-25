@@ -7,10 +7,10 @@
 <title>蓝色星球 · BluePlanet — 地球地理科普</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="css/style.css?v=bp52">
-<link rel="stylesheet" href="css/modules.css?v=bp52">
-<link rel="stylesheet" href="css/v3.css?v=bp52">
-<link rel="stylesheet" href="css/v5.css?v=bp52">
+<link rel="stylesheet" href="css/style.css?v=bp53">
+<link rel="stylesheet" href="css/modules.css?v=bp53">
+<link rel="stylesheet" href="css/v3.css?v=bp53">
+<link rel="stylesheet" href="css/v5.css?v=bp53">
 <meta name="theme-color" content="#0D1B2A">
 </head>
 <body>
@@ -79,6 +79,22 @@
     <kbd style="background:rgba(255,255,255,.08);padding:1px 6px;border-radius:4px;font-size:11px">Esc</kbd><span>关闭卡片</span>
   </div>
   <div style="margin-top:8px;color:var(--c-text-dim,#9FB6C9);font-size:10.5px">拖拽旋转 · 滚轮缩放 · 双击定位</div>
+  <button id="obReplay" style="margin-top:8px;width:100%;background:rgba(61,190,139,.14);border:1px solid rgba(61,190,139,.4);color:#7fd8b0;border-radius:8px;padding:5px 0;cursor:pointer;font-size:11.5px">🌍 重看新手引导</button>
+</div>
+
+<!-- v31 新手引导 -->
+<div id="onboardModal" class="modal hidden">
+  <div class="modal-box onboard-box">
+    <div class="ob-icon" id="obIcon">🖱️</div>
+    <div class="ob-title" id="obTitle"></div>
+    <div class="ob-desc" id="obDesc"></div>
+    <div class="ob-dots" id="obDots"></div>
+    <div class="ob-actions">
+      <button class="chip-btn warn" id="obSkip">跳过</button>
+      <button class="chip-btn" id="obPrev">← 上一步</button>
+      <button class="chip-btn ob-next" id="obNext">下一步 →</button>
+    </div>
+  </div>
 </div>
 
 <!-- 深时古地球面板 -->
@@ -391,34 +407,35 @@
 <script src="js/lib/OrbitControls.js"></script>
 <script>
 /* N1①：http(s) 环境跳过 1.2MB 内嵌贴图（直接加载 textures/ 真实文件），file:// 才内嵌 */
-if (location.protocol === 'file:') document.write('<script src="js/textures-data.js?v=bp52"><\/script>');
+if (location.protocol === 'file:') document.write('<script src="js/textures-data.js?v=bp53"><\/script>');
 </script>
-<script src="js/data.js?v=bp52"></script>
-<script src="js/textures.js?v=bp52"></script>
-<script src="js/scene.js?v=bp52"></script>
-<script src="js/markers.js?v=bp52"></script>
-<script src="js/labels.js?v=bp52"></script>
-<script src="js/figures.js?v=bp52"></script>
-<script src="js/layers.js?v=bp52"></script>
-<script src="js/cutaway.js?v=bp52"></script>
-<script src="js/tours.js?v=bp52"></script>
-<script src="js/game.js?v=bp52"></script>
-<script src="js/insights.js?v=bp52"></script>
-<script src="js/search.js?v=bp52"></script>
-<script src="js/assistant.js?v=bp52"></script>
-<script src="js/lab.js?v=bp52"></script>
-<script src="js/measure.js?v=bp52"></script>
-<script src="js/random.js?v=bp52"></script>
-<script src="js/quakes.js?v=bp52"></script>
-<script src="js/deeptime-data.js?v=bp52"></script>
-<script src="js/deeptime.js?v=bp52"></script>
-<script src="js/puzzle.js?v=bp52"></script>
-<script src="js/panels.js?v=bp52"></script>
-<script src="js/catalog.js?v=bp52"></script>
-<script src="js/tts.js?v=bp52"></script>
-<script src="js/postcard.js?v=bp52"></script>
-<script src="js/i18n.js?v=bp52"></script>
-<script src="js/ui.js?v=bp52"></script>
-<script src="js/main.js?v=bp52"></script>
+<script src="js/data.js?v=bp53"></script>
+<script src="js/textures.js?v=bp53"></script>
+<script src="js/scene.js?v=bp53"></script>
+<script src="js/markers.js?v=bp53"></script>
+<script src="js/labels.js?v=bp53"></script>
+<script src="js/figures.js?v=bp53"></script>
+<script src="js/layers.js?v=bp53"></script>
+<script src="js/cutaway.js?v=bp53"></script>
+<script src="js/tours.js?v=bp53"></script>
+<script src="js/game.js?v=bp53"></script>
+<script src="js/insights.js?v=bp53"></script>
+<script src="js/search.js?v=bp53"></script>
+<script src="js/assistant.js?v=bp53"></script>
+<script src="js/lab.js?v=bp53"></script>
+<script src="js/measure.js?v=bp53"></script>
+<script src="js/random.js?v=bp53"></script>
+<script src="js/quakes.js?v=bp53"></script>
+<script src="js/deeptime-data.js?v=bp53"></script>
+<script src="js/deeptime.js?v=bp53"></script>
+<script src="js/puzzle.js?v=bp53"></script>
+<script src="js/panels.js?v=bp53"></script>
+<script src="js/catalog.js?v=bp53"></script>
+<script src="js/tts.js?v=bp53"></script>
+<script src="js/onboard.js?v=bp53"></script>
+<script src="js/postcard.js?v=bp53"></script>
+<script src="js/i18n.js?v=bp53"></script>
+<script src="js/ui.js?v=bp53"></script>
+<script src="js/main.js?v=bp53"></script>
 </body>
 </html>

@@ -329,3 +329,14 @@
 /* v30 错题本 */
 .quiz-wrong-row { margin-top: 12px; padding-top: 10px; border-top: 1px dashed rgba(122,178,214,.2); }
 .quiz-wrong-line { font-size: 12.5px; color: #ffc069; margin-bottom: 4px; }
+
+/* ===== v31 新手引导 ===== */
+.onboard-box { width: min(400px, calc(100vw - 32px)); text-align: center; padding: 26px 26px 20px; }
+.ob-icon { font-size: 44px; line-height: 1; margin-bottom: 12px; }
+.ob-title { font-size: 17px; font-weight: 700; color: var(--c-text, #E8F1F8); margin-bottom: 10px; }
+.ob-desc { font-size: 13px; line-height: 1.85; color: var(--c-text-dim, #AFC6D9); text-align: left; min-height: 96px; }
+.ob-dots { display: flex; justify-content: center; gap: 7px; margin: 14px 0 4px; }
+.ob-dots i { width: 7px; height: 7px; border-radius: 50%; background: rgba(122,178,214,.3); transition: all .25s; }
+.ob-dots i.on { background: #3DBE8B; transform: scale(1.35); }
+.ob-actions { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
+.ob-next { border-color: rgba(61,190,139,.5); color: #7fd8b0; }

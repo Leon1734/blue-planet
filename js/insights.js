@@ -87,6 +87,12 @@ const BPInsights = (() => {
     html += '</div>';
     const best = (typeof BPGame !== 'undefined' && BPGame.profile) ? BPGame.profile.quizBest : 0;
     if (best) html += `<div class="ins-quiz-best">🧠 闯关最佳：${best} 分</div>`;
+    /* v31 错题与收藏概览 */
+    const prof = (typeof BPGame !== 'undefined') ? BPGame.profile : null;
+    const wrongN = prof ? Object.keys(prof.wrong || {}).length : 0;
+    if (wrongN) html += `<div class="ins-quiz-best">📕 待攻克错题：${wrongN} 道（闯关里可重练）</div>`;
+    const favN = prof ? (prof.favs || []).length : 0;
+    if (favN) html += `<div class="ins-quiz-best">⭐ 已收藏：${favN} 个知识点</div>`;
     box.innerHTML = html;
     container.prepend(box);
   }

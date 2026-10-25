@@ -326,6 +326,7 @@
     BPUI.init();
     BPi18n.init();          // v8 双语 chrome
     bindUI();
+    if (typeof BPOnboard !== 'undefined') BPOnboard.wire();   // v31 新手引导
     registerSW();
 
     BPTextures.load()
@@ -344,6 +345,8 @@
         start();
         // 入场动画：从远处推近至东亚上空
         BPScene.flyTo(24, 105, 345, 2600);
+        /* v31 新手引导：首次访问自动弹出 */
+        if (typeof BPOnboard !== 'undefined') BPOnboard.maybeShow();
         /* v16 hash 分享：#poi=everest 直接飞达 */
         const hm = location.hash.match(/poi=(\w+)/);
         if (hm) {
