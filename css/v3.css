@@ -199,14 +199,16 @@
   #searchBox {
     right: 8px; left: 8px; top: 118px; width: auto;
   }
-  /* 9 个图层按钮换行排布 */
+  /* v33：图层按钮单排横向滑动（原来换行占三排，挡视野） */
   #layerPanel {
     right: 8px; left: 8px;
-    flex-wrap: wrap;
-    justify-content: center;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
     max-width: calc(100vw - 16px);
   }
-  .layer-btn { width: 52px; }
+  #layerPanel::-webkit-scrollbar { display: none; }
+  .layer-btn { flex: 0 0 auto; width: 52px; }
   #chatPanel {
     left: 8px; right: 8px; width: auto;
     bottom: 190px;

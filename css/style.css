@@ -431,15 +431,31 @@ body.chat-open #moduleNav { max-height: calc(100vh - 180px); }
 
   /* 图层面板：收成右上角一排 */
   #layerPanel {
-    right: 8px; left: auto; top: 64px; bottom: auto;
+    left: 8px; right: 8px; top: 64px; bottom: auto;
     transform: none;
     flex-direction: row;
+    flex-wrap: nowrap;              /* v33：单排横向滑动，不再换行成三排 */
+    overflow-x: auto;
+    scrollbar-width: none;
   }
-  .layer-btn { width: 58px; padding: 5px 2px; border-radius: 10px; }
+  #layerPanel::-webkit-scrollbar { display: none; }
+  .layer-btn { flex: 0 0 auto; width: 58px; padding: 5px 2px; border-radius: 10px; }
   .layer-btn .layer-ico { font-size: 14px; }
   .layer-btn .layer-txt { font-size: 10px; }
 
-  #factCard { display: none; }         /* 移动端信息过载，冷知识让位 */
+  /* v33：冷知识回归移动端——紧凑条（隐藏今日地球头，点头部展开正文） */
+  #factCard {
+    display: block; left: 8px; right: auto; bottom: 196px;
+    max-width: min(320px, calc(100vw - 24px));
+    padding: 8px 12px;
+  }
+  #factCard .fact-head,
+  #factCard .today-event,
+  #factCard .fact-daily { display: none; }
+  #factCard .fact-head2 { margin-bottom: 0; }
+  #factCard .fact-body { display: none; margin-top: 6px; font-size: 12px; max-height: 26vh; overflow-y: auto; }
+  #factCard.open-m .fact-body { display: block; }
+  #hint { top: 136px; }               /* 让开单排图层条 */
   #day24 { bottom: 8px; padding: 7px 12px 9px; width: calc(100vw - 16px); }
   .day24-sub { display: none; }
   .day24-seg .seg-name { display: none; }

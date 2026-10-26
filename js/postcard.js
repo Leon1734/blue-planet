@@ -37,11 +37,62 @@ const BPPostcard = (() => {
     ctx.closePath();
   }
 
+  /* 公共底版：底色 + 地球快照 + 渐变过渡 + 描边（make / makeFact 共用） */
+  function drawShell(ctx, strokeColor) {
+    ctx.fillStyle = '#0D1B2A';
+    ctx.fillRect(0, 0, W, H);
+    const imgH = Math.round(H * 0.72);
+    const gl = document.getElementById('scene');
+    if (gl && gl.width > 2) {
+      const scale = Math.max(W / gl.width, imgH / gl.height);
+      const dw = gl.width * scale, dh = gl.height * scale;
+      ctx.save();
+      ctx.beginPath(); ctx.rect(0, 0, W, imgH); ctx.clip();
+      ctx.drawImage(gl, (W - dw) / 2, (imgH - dh) / 2, dw, dh);
+      ctx.restore();
+    }
+    /* 快照底缘渐变入底色 */
+    const g = ctx.createLinearGradient(0, imgH - 280, 0, imgH);
+    g.addColorStop(0, 'rgba(13,27,42,0)');
+    g.addColorStop(1, 'rgba(13,27,42,1)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, imgH - 280, W, 280);
+
+    ctx.strokeStyle = strokeColor;
+    ctx.lineWidth = 3;
+    ctx.strokeRect(26, 26, W - 52, H - 52);
+    return imgH;
+  }
+
+  /* 公共页脚：分隔线 + 品牌 + 站址日期 */
+  function drawFooter(ctx) {
+    const d = new Date();
+    ctx.strokeStyle = 'rgba(122,178,214,0.25)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(64, H - 110); ctx.lineTo(W - 64, H - 110); ctx.stroke();
+    ctx.textBaseline = 'middle';
+    ctx.font = '600 26px "Microsoft YaHei","PingFang SC",sans-serif';
+    ctx.fillStyle = '#C9DAE8';
+    ctx.fillText('🌍 蓝色星球 · 会转的地理课本', 64, H - 62);
+    ctx.textAlign = 'right';
+    ctx.font = '400 22px "Microsoft YaHei","PingFang SC",sans-serif';
+    ctx.fillStyle = '#7D97AD';
+    ctx.fillText(`leon1734.github.io/blue-planet · ${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`, W - 64, H - 62);
+    ctx.textAlign = 'left';
+  }
+
+  function download(ctx, name) {
+    const a = document.createElement('a');
+    a.href = ctx.canvas.toDataURL('image/png');
+    a.download = name;
+    a.click();
+    if (typeof BPPanels !== 'undefined' && BPPanels.toast) BPPanels.toast('📷 明信片已生成并下载');
+  }
+
   function make(poi) {
     try {
       /* 1. 现渲一帧并同 tick 取样（避免后台/节流取到空缓冲） */
       if (typeof BPScene !== 'undefined') BPScene.render();
-      const gl = document.getElementById('scene');
 
       const c = document.createElement('canvas');
       c.width = W; c.height = H;
@@ -49,29 +100,8 @@ const BPPostcard = (() => {
       const mod = (typeof BP_MODULES !== 'undefined') ? BP_MODULES.find(m => m.id === poi.module) : null;
       const modColor = mod ? mod.color : '#8FC8E8';
 
-      /* 2. 底色 + 地球快照（等比放大裁剪铺满上部） */
-      ctx.fillStyle = '#0D1B2A';
-      ctx.fillRect(0, 0, W, H);
-      const imgH = Math.round(H * 0.72);
-      if (gl && gl.width > 2) {
-        const scale = Math.max(W / gl.width, imgH / gl.height);
-        const dw = gl.width * scale, dh = gl.height * scale;
-        ctx.save();
-        ctx.beginPath(); ctx.rect(0, 0, W, imgH); ctx.clip();
-        ctx.drawImage(gl, (W - dw) / 2, (imgH - dh) / 2, dw, dh);
-        ctx.restore();
-      }
-      /* 快照底缘渐变入底色 */
-      const g = ctx.createLinearGradient(0, imgH - 280, 0, imgH);
-      g.addColorStop(0, 'rgba(13,27,42,0)');
-      g.addColorStop(1, 'rgba(13,27,42,1)');
-      ctx.fillStyle = g;
-      ctx.fillRect(0, imgH - 280, W, 280);
-
-      /* 3. 模块色描边 + 角标 */
-      ctx.strokeStyle = modColor;
-      ctx.lineWidth = 3;
-      ctx.strokeRect(26, 26, W - 52, H - 52);
+      /* 2. 底版 + 地球快照 */
+      const imgH = drawShell(ctx, modColor);
 
       /* 4. 信息区：模块胶囊 + 难度星 */
       let y = imgH + 66;
@@ -118,26 +148,9 @@ const BPPostcard = (() => {
       if (pf && pf.favs && pf.favs.includes(poi.id)) stat += '   ⭐ 已收藏';
       ctx.fillText(stat, 64, y + 12);
 
-      /* 8. 页脚：品牌 + 站址 + 日期 */
-      const d = new Date();
-      ctx.strokeStyle = 'rgba(122,178,214,0.25)';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.moveTo(64, H - 110); ctx.lineTo(W - 64, H - 110); ctx.stroke();
-      ctx.textBaseline = 'middle';
-      ctx.font = '600 26px "Microsoft YaHei","PingFang SC",sans-serif';
-      ctx.fillStyle = '#C9DAE8';
-      ctx.fillText('🌍 蓝色星球 · 会转的地理课本', 64, H - 62);
-      ctx.textAlign = 'right';
-      ctx.font = '400 22px "Microsoft YaHei","PingFang SC",sans-serif';
-      ctx.fillStyle = '#7D97AD';
-      ctx.fillText(`leon1734.github.io/blue-planet · ${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`, W - 64, H - 62);
-
-      /* 9. 下载 */
-      const a = document.createElement('a');
-      a.href = c.toDataURL('image/png');
-      a.download = `蓝色星球_${poi.title}.png`;
-      a.click();
-      if (typeof BPPanels !== 'undefined' && BPPanels.toast) BPPanels.toast('📷 明信片已生成并下载');
+      /* 8. 页脚 + 下载 */
+      drawFooter(ctx);
+      download(ctx, `蓝色星球_${poi.title}.png`);
       return true;
     } catch (e) {
       if (typeof BPPanels !== 'undefined' && BPPanels.toast) BPPanels.toast('📷 生成失败：' + (e.message || '画布不可用'));
@@ -145,5 +158,41 @@ const BPPostcard = (() => {
     }
   }
 
-  return { make };
+  /* v33 冷知识明信片：地球快照 + 💡 冷知识正文 */
+  function makeFact(factText) {
+    try {
+      if (typeof BPScene !== 'undefined') BPScene.render();
+      const c = document.createElement('canvas');
+      c.width = W; c.height = H;
+      const ctx = c.getContext('2d');
+      const imgH = drawShell(ctx, '#FFD24A');   // 冷知识金色描边
+
+      /* 💡 徽标胶囊 */
+      let y = imgH + 66;
+      ctx.font = '500 26px "Microsoft YaHei","PingFang SC",sans-serif';
+      const label = '💡 冷知识';
+      const pillW = ctx.measureText(label).width + 48;
+      ctx.strokeStyle = '#FFD24A';
+      ctx.lineWidth = 2.5;
+      pill(ctx, 64, y, pillW, 50, 25); ctx.stroke();
+      ctx.fillStyle = '#FFD24A';
+      ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+      ctx.fillText(label, 64 + 24, y + 26);
+
+      /* 冷知识正文（最多 8 行） */
+      y += 118;
+      ctx.font = '600 40px "Microsoft YaHei","PingFang SC",sans-serif';
+      ctx.fillStyle = '#F2F8FD';
+      for (const ln of wrap(ctx, factText || '', W - 128, 8)) { ctx.fillText(ln, 64, y + 20); y += 62; }
+
+      drawFooter(ctx);
+      download(ctx, '蓝色星球_冷知识.png');
+      return true;
+    } catch (e) {
+      if (typeof BPPanels !== 'undefined' && BPPanels.toast) BPPanels.toast('📷 生成失败：' + (e.message || '画布不可用'));
+      return false;
+    }
+  }
+
+  return { make, makeFact };
 })();

@@ -256,9 +256,11 @@ const BPUI = (() => {
   }
 
   /* ---------- 今日地球（v5：日期 + 地理日历 + 手动冷知识） ---------- */
+  let curFactText = '';   // v33 当前冷知识文本（📷 明信片用）
   function showFact() {
     const f = BP_FACTS[Math.floor(Math.random() * BP_FACTS.length)];
     const obj = typeof f === 'string' ? { t: f } : f;
+    curFactText = obj.t;
     const box = $('factBody');
     box.textContent = obj.t;
     box.querySelectorAll('.today-jump').forEach(b => b.remove());
@@ -297,6 +299,18 @@ const BPUI = (() => {
     });
     showFact();
     $('factNext').addEventListener('click', showFact);
+    /* v33 冷知识明信片 */
+    const fpc = $('factPc');
+    if (fpc) fpc.addEventListener('click', () => {
+      if (typeof BPPostcard !== 'undefined' && BPPostcard.makeFact) BPPostcard.makeFact(curFactText);
+    });
+    /* v33 移动端：冷知识紧凑条——点头部展开/收起正文（按钮不触发） */
+    const fh2 = document.querySelector('#factCard .fact-head2');
+    if (fh2) fh2.addEventListener('click', (e) => {
+      if (e.target.closest('button')) return;
+      if (!window.matchMedia('(max-width: 860px)').matches) return;
+      $('factCard').classList.toggle('open-m');
+    });
     $('factToggle').addEventListener('click', () => setFactCollapsed(!isFactCollapsed()));
     applyFactCollapsed();
   }
