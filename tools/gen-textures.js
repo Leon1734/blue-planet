@@ -14,7 +14,6 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const FILES = {
   day: 'textures/earth_day.jpg',
-  night: 'textures/earth_night.png',
   clouds: 'textures/earth_clouds.png',
   topo: 'textures/earth_topo.jpg',
 };

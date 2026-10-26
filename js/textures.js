@@ -99,21 +99,18 @@ const BPTextures = (() => {
           undefined, () => (optional ? resolve(null) : reject(new Error('在线贴图加载失败 ' + rel))));
       });
       const jobs = ONLINE ? [
-        fromURL('textures/earth_day.jpg', t => { t.anisotropy = 4; }),
-        fromURL('textures/earth_night.png'),
+        fromURL('textures/earth_day.jpg', t => { t.anisotropy = 8; }),
         fromURL('textures/earth_clouds.png', t => { t.wrapS = THREE.RepeatWrapping; }),
         fromURL('textures/earth_topo.jpg', t => { t.anisotropy = 8; }, true),
       ] : [
-        D ? fromDataURI(D.day, t => { t.anisotropy = 4; }) : fail('day'),
-        D ? fromDataURI(D.night) : fail('night'),
+        D ? fromDataURI(D.day, t => { t.anisotropy = 8; }) : fail('day'),
         D ? fromDataURI(D.clouds, t => { t.wrapS = THREE.RepeatWrapping; }) : fail('clouds'),
         D && D.topo ? fromDataURI(D.topo, t => { t.anisotropy = 8; }) : Promise.resolve(null),
       ];
-      return Promise.all(jobs).then(([day, night, clouds, topo]) => {
+      return Promise.all(jobs).then(([day, clouds, topo]) => {
         if (topo) buildTopoSampler(topo.image);
         cache = {
           earthDay: day,
-          earthNight: night,
           earthClouds: clouds,
           earthTopo: topo,
           sampleHeight,

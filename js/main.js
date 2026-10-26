@@ -222,7 +222,8 @@
       if (key === 'clouds') BPScene.cloudMesh.visible = on;
       if (key === 'markers') BPMarkers.setVisible(on);
       if (key === 'labels') BPLabels.setVisible(on);
-      if (key === 'rivers' || key === 'currents' || key === 'winds' || key === 'climate') {
+      if (key === 'rivers' || key === 'currents' || key === 'winds' || key === 'climate' ||
+          key === 'borders' || key === 'graticule') {
         BPLayers.setVisible(key, on);
       }
       if (key === 'spin') BPScene.spin.auto = on;

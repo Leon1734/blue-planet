@@ -88,7 +88,7 @@ const BPScene = (() => {
   /* 地球：全昼"图上科普"风格 + 高程凹凸着色（相机相对光照的图集式山体阴影） */
   const EARTH_FS = `
     precision highp float;
-    uniform sampler2D dayMap; uniform sampler2D nightMap;
+    uniform sampler2D dayMap;
     uniform sampler2D heightMap; uniform float uBump;
     uniform vec3 sunDir;
     varying vec2 vUv; varying vec3 vWN; varying vec3 vVN; varying vec3 vVP;
@@ -263,18 +263,23 @@ const BPScene = (() => {
     earthMat = new THREE.ShaderMaterial({
       uniforms: {
         dayMap: { value: textures.earthDay },
-        nightMap: { value: textures.earthNight },
         heightMap: { value: textures.earthTopo || textures.earthDay },
         uRelief: { value: 2.4 },   // 顶点位移强度（R=100 下珠峰约 +2.2）
-        uBump: { value: 5.0 },     // 凹凸着色强度
+        uBump: { value: 6.0 },     // 凹凸着色强度（v32 真实高程图，可稍强）
         sunDir: { value: sunDir },
       },
       vertexShader: EARTH_VS,
       fragmentShader: EARTH_FS,
     });
     earthMat.extensions = { derivatives: true };  // WebGL1 回退时启用 dFdx/dFdy
-    const earth = new THREE.Mesh(new THREE.SphereGeometry(R, 128, 96), earthMat);
+    const earth = new THREE.Mesh(new THREE.SphereGeometry(R, 160, 120), earthMat);
     earthGroup.add(earth);
+
+    /* v32：贴图各向异性拉满（昼图/高程图），斜视海岸线不再糊 */
+    const maxAniso = renderer.capabilities.getMaxAnisotropy();
+    for (const t of [textures.earthDay, textures.earthTopo]) {
+      if (t) { t.anisotropy = maxAniso; t.needsUpdate = true; }
+    }
 
     /* 云壳 */
     const cloudMat = new THREE.ShaderMaterial({

@@ -18,6 +18,7 @@ const BPi18n = (() => {
       lblLabels: '地名', lblRivers: '河流', lblCurrents: '洋流', lblWinds: '风带',
       lblClimate: '气候带', lblPlates: '板块', lblQuakes: '地震', lblClouds: '云层',
       lblMarkers: '兴趣点', lblSpin: '自转',
+      lblBorders: '国界', lblGraticule: '经纬网',
       bjTime: '北京时间', today: '今日地球', fact: '冷知识', next: '换一条',
       modules: '知识模块', visited: '已点亮',
       loading: '正在点亮地球…', langBtn: 'EN',
@@ -31,6 +32,7 @@ const BPi18n = (() => {
       lblLabels: 'Names', lblRivers: 'Rivers', lblCurrents: 'Currents', lblWinds: 'Winds',
       lblClimate: 'Zones', lblPlates: 'Plates', lblQuakes: 'Quakes', lblClouds: 'Clouds',
       lblMarkers: 'POIs', lblSpin: 'Spin',
+      lblBorders: 'Borders', lblGraticule: 'Grid',
       bjTime: 'Beijing', today: 'Earth Today', fact: 'Did you know', next: 'Next',
       modules: 'MODULES', visited: 'lit',
       loading: 'Lighting up the globe…', langBtn: '中',
@@ -71,7 +73,7 @@ const BPi18n = (() => {
     const head = document.querySelector('.module-nav-head > span');
     if (head) head.textContent = t('modules');
     /* 图层按钮 */
-    const layerMap = { labels: 'lblLabels', rivers: 'lblRivers', currents: 'lblCurrents', winds: 'lblWinds', climate: 'lblClimate', plates: 'lblPlates', quakes: 'lblQuakes', clouds: 'lblClouds', markers: 'lblMarkers', spin: 'lblSpin' };
+    const layerMap = { labels: 'lblLabels', rivers: 'lblRivers', currents: 'lblCurrents', winds: 'lblWinds', climate: 'lblClimate', plates: 'lblPlates', quakes: 'lblQuakes', borders: 'lblBorders', graticule: 'lblGraticule', clouds: 'lblClouds', markers: 'lblMarkers', spin: 'lblSpin' };
     document.querySelectorAll('.layer-btn').forEach(btn => {
       const txt = btn.querySelector('.layer-txt');
       const k = layerMap[btn.dataset.layer];

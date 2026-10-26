@@ -4,6 +4,8 @@
    - currents 表层洋流粒子：暖流橙红 / 寒流冰蓝，沿流路游动
    - winds   风带粒子：信风向西 / 西风向东，沿纬圈环流
    - climate 气候带色环：热带/温带/寒带半透明纬向色带 + 回归线极圈
+   - borders 国界+海岸线描边：Natural Earth 110m（v32，默认开）
+   - graticule 经纬网：15° 网格 + 赤道加亮（v32，默认关）
    全部挂在 earthGroup 下随自转；update(dtSec) 驱动动画
    ============================================================ */
 
@@ -22,12 +24,15 @@ const BPLayers = (() => {
 
   const COLORS = { river: 0x6ec6ff, warm: 0xff7a4d, cold: 0x4da6ff, wind: 0xdcefff };
 
+  /* ---------- 工具：单点贴地（含高程抬升） ---------- */
+  function groundPoint(lat, lon, lift = 0.3) {
+    const h = BPTextures.sampleHeight ? BPTextures.sampleHeight(lat, lon) : 0;
+    return BPScene.latLonToVec3(lat, lon, BPScene.R + BPScene.RELIEF * h + lift);
+  }
+
   /* ---------- 工具：经纬折线 → 贴地三维点列（含高程抬升） ---------- */
   function groundLine(pts, lift = 0.3) {
-    return pts.map(([lat, lon]) => {
-      const h = BPTextures.sampleHeight ? BPTextures.sampleHeight(lat, lon) : 0;
-      return BPScene.latLonToVec3(lat, lon, BPScene.R + BPScene.RELIEF * h + lift);
-    });
+    return pts.map(([lat, lon]) => groundPoint(lat, lon, lift));
   }
 
   /* ---------- 河流层：折线 + 流动脉冲 shader ---------- */
@@ -202,6 +207,52 @@ const BPLayers = (() => {
     groups.climate.add(shell);
   }
 
+  /* ---------- 国界+海岸线层：Natural Earth 110m 折线描边（v32） ---------- */
+  function buildBorders(group) {
+    const pos = [];
+    for (const ring of BP_BORDERS) {
+      for (let i = 0; i < ring.length - 2; i += 2) {
+        const a = groundPoint(ring[i + 1] / 10, ring[i] / 10, 0.28);
+        const b = groundPoint(ring[i + 3] / 10, ring[i + 2] / 10, 0.28);
+        pos.push(a.x, a.y, a.z, b.x, b.y, b.z);
+      }
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    group.add(new THREE.LineSegments(g, new THREE.LineBasicMaterial({
+      color: 0xffe08a, transparent: true, opacity: 0.5, depthWrite: false,
+    })));
+  }
+
+  /* ---------- 经纬网层：15° 网格 + 赤道加亮（v32） ---------- */
+  function buildGraticule(group) {
+    const grid = [], eq = [];
+    const seg = (arr, lat1, lon1, lat2, lon2) => {
+      const a = groundPoint(lat1, lon1, 0.22), b = groundPoint(lat2, lon2, 0.22);
+      arr.push(a.x, a.y, a.z, b.x, b.y, b.z);
+    };
+    for (let lon = -180; lon < 180; lon += 15) {          // 经线（±80° 截止）
+      for (let lat = -80; lat < 80; lat += 2) {
+        const arr = (lat < 0 && lat + 2 > 0) ? eq : grid;
+        seg(arr, lat, lon, Math.min(80, lat + 2), lon);
+      }
+    }
+    for (let lat = -75; lat <= 75; lat += 15) {           // 纬线（赤道单独加亮）
+      if (lat === 0) continue;
+      for (let lon = -180; lon < 180; lon += 2) seg(grid, lat, lon, lat, lon + 2);
+    }
+    for (let lon = -180; lon < 180; lon += 2) seg(eq, 0, lon, 0, lon + 2);
+    const mk = (arr, color, opacity) => {
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Float32BufferAttribute(arr, 3));
+      group.add(new THREE.LineSegments(g, new THREE.LineBasicMaterial({
+        color, transparent: true, opacity, depthWrite: false,
+      })));
+    };
+    mk(grid, 0xffffff, 0.16);
+    mk(eq, 0xffd9a0, 0.42);
+  }
+
   /* ---------- 组装 ---------- */
   function build(textures) {
     _tex = textures;
@@ -212,7 +263,11 @@ const BPLayers = (() => {
     buildCurrents(groups.currents);
     buildWinds(groups.winds);
     buildClimate();
-    BPScene.earthGroup.add(groups.rivers, groups.currents, groups.winds, groups.climate);
+    buildBorders(groups.borders = new THREE.Group());
+    buildGraticule(groups.graticule = new THREE.Group());
+    groups.graticule.visible = false;   // 与图层按钮默认关闭一致
+    BPScene.earthGroup.add(groups.rivers, groups.currents, groups.winds, groups.climate,
+      groups.borders, groups.graticule);
   }
 
   /* ---------- 逐帧 ---------- */
