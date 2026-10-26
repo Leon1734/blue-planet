@@ -243,6 +243,11 @@
   border-radius: 999px; padding: 3px 10px; cursor: pointer;
 }
 .card-rel-link:hover { background: rgba(61, 190, 139, .18); }
+/* v34 跨模块关联：所属模块色小圆点 */
+.rel-dot {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  margin-right: 5px; vertical-align: middle;
+}
 
 /* ---------- v20 AI 配图 ---------- */
 .ai-loading { font-size: 11px; color: var(--c-text-dim); padding: 6px 0; }

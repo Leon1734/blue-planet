@@ -82,6 +82,30 @@ const BPUI = (() => {
   }
 
   /* ---------- 知识卡片（v5：图解 + 速览条 + 图片扩展位） ---------- */
+  /* v34 跨模块知识网：主题概念词典（关键词命中即归入该主题） */
+  const REL_CONCEPTS = [
+    ['高山', ['峰', '山脉', '高原', '山系', '喜马拉雅', '喀喇昆仑', '安第斯', '阿尔卑斯', '落基', '山']],
+    ['火山', ['火山', '喷发', '岩浆', '地热', '温泉', '熔岩', '热点']],
+    ['深海沟', ['海沟', '深海', '洋底', '海岭', '洋中脊', '海底']],
+    ['洋流', ['洋流', '暖流', '寒流', '环流', '漂流', '上升流', '潮汐']],
+    ['冰川', ['冰川', '冰盖', '冰架', '冰原', '冻土', '积雪', '雪线', '冰期']],
+    ['极地', ['南极', '北极', '极地', '极夜', '极昼']],
+    ['河流', ['河流', '大河', '三角洲', '流域', '江', '河']],
+    ['湖泊', ['湖']],
+    ['沙漠', ['沙漠', '沙丘', '荒漠', '干旱', '戈壁', '绿洲']],
+    ['喀斯特', ['喀斯特', '岩溶', '溶洞', '天坑', '石林']],
+    ['板块', ['板块', '俯冲', '碰撞', '裂谷', '断层', '地震', '漂移', '构造']],
+    ['珊瑚', ['珊瑚', '礁']],
+    ['岛屿', ['岛']],
+    ['风系气候', ['季风', '信风', '西风', '风带', '气候', '降水', '雨影', '急流']],
+    ['人类工程', ['城市', '人口', '农业', '运河', '大坝', '工程', '航运', '铁路']],
+    ['生态', ['生物', '物种', '生态', '动物', '植物', '鲸', '企鹅', '鱼', '磷虾']],
+  ];
+  function BPRelConcepts(p) {
+    const s = p.title + ' ' + (p.tags || []).join(' ');
+    return REL_CONCEPTS.filter(([, kws]) => kws.some(k => s.includes(k))).map(([c]) => c);
+  }
+
   function fillCard(poi) {
     const mod = BP_MODULES.find(m => m.id === poi.module);
     $('cardModule').innerHTML =
@@ -114,15 +138,32 @@ const BPUI = (() => {
       box.appendChild(p);
     });
     $('cardTags').innerHTML = poi.tags.map(t => `<span># ${t}</span>`).join('');
-    /* v16 相关推荐：同模块相邻 POI 缩略链接 */
+    /* v16 相关推荐 → v34 知识网络：同模块相邻 + 主题重合的跨模块关联 */
     const relBox = $('cardRelated');
     if (relBox) {
       const sibs = BP_POIS.filter(x => x.module === poi.module && x.id !== poi.id).slice(0, 3);
-      relBox.innerHTML = sibs.length
-        ? '<div class="card-rel-title">📍 同模块</div>' + sibs.map(r =>
-            `<button class="card-rel-link" data-poi="${r.id}">${r.title} →</button>`).join('')
-        : '';
-      relBox.classList.toggle('hidden', !sibs.length);
+      /* 主题概念词典：关键词 → 概念（跨模块推荐用） */
+      const mySet = new Set(BPRelConcepts(poi));
+      const cross = BP_POIS
+        .filter(x => x.module !== poi.module)
+        .map(x => ({ x, n: BPRelConcepts(x).filter(c => mySet.has(c)).length }))
+        .filter(o => o.n > 0)
+        .sort((a, b) => b.n - a.n)
+        .slice(0, 3)
+        .map(o => o.x);
+      let html = '';
+      if (sibs.length) {
+        html += '<div class="card-rel-title">📍 同模块</div>' + sibs.map(r =>
+          `<button class="card-rel-link" data-poi="${r.id}">${r.title} →</button>`).join('');
+      }
+      if (cross.length) {
+        html += '<div class="card-rel-title">🔗 跨模块知识网</div>' + cross.map(r => {
+          const rm = BP_MODULES.find(m => m.id === r.module);
+          return `<button class="card-rel-link" data-poi="${r.id}"><i class="rel-dot" style="background:${rm ? rm.color : '#8FC8E8'}"></i>${r.title} →</button>`;
+        }).join('');
+      }
+      relBox.innerHTML = html;
+      relBox.classList.toggle('hidden', !html);
       relBox.querySelectorAll('.card-rel-link').forEach(b => {
         b.addEventListener('click', () => {
           if (typeof BPPanels !== 'undefined' && BPPanels.selectApi) BPPanels.selectApi.selectPoi(b.dataset.poi);

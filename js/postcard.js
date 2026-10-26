@@ -194,5 +194,59 @@ const BPPostcard = (() => {
     }
   }
 
-  return { make, makeFact };
+  /* v34 深时纪元明信片：古地球快照 + 纪元名 + 简介 + 生命 */
+  function makeEpoch(epoch) {
+    try {
+      if (typeof BPScene !== 'undefined') BPScene.render();
+      const c = document.createElement('canvas');
+      c.width = W; c.height = H;
+      const ctx = c.getContext('2d');
+      const col = epoch.color || '#8FC8E8';
+      const imgH = drawShell(ctx, col);
+
+      /* 胶囊：深时 · 距今 N 百万年 */
+      let y = imgH + 48;
+      ctx.font = '500 26px "Microsoft YaHei","PingFang SC",sans-serif';
+      const label = `🕰 深时 · 距今 ${epoch.ma} 百万年`;
+      const pillW = ctx.measureText(label).width + 48;
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 2.5;
+      pill(ctx, 64, y, pillW, 50, 25); ctx.stroke();
+      ctx.fillStyle = col;
+      ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+      ctx.fillText(label, 64 + 24, y + 26);
+
+      /* 纪元名大字（信息区需在页脚线上方收束，间距全部收紧） */
+      y += 72;
+      ctx.font = '700 52px "Microsoft YaHei","PingFang SC",sans-serif';
+      ctx.fillStyle = '#F2F8FD';
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillText(epoch.t, 64, y + 26);
+      y += 52;
+
+      /* 简介（最多 2 行） */
+      y += 8;
+      ctx.font = '400 25px "Microsoft YaHei","PingFang SC",sans-serif';
+      ctx.fillStyle = '#AFC6D9';
+      for (const ln of wrap(ctx, epoch.brief || '', W - 128, 2)) { ctx.fillText(ln, 64, y + 14); y += 36; }
+
+      /* 生命（单行小字，空间不足则略去） */
+      y += 6;
+      if (y + 22 < H - 130 && epoch.life) {
+        ctx.font = '400 21px "Microsoft YaHei","PingFang SC",sans-serif';
+        ctx.fillStyle = '#7D97AD';
+        const lifeLines = wrap(ctx, epoch.life, W - 128, 1);
+        if (lifeLines.length) ctx.fillText(lifeLines[0], 64, y + 12);
+      }
+
+      drawFooter(ctx);
+      download(ctx, `蓝色星球_深时_${epoch.t}.png`);
+      return true;
+    } catch (e) {
+      if (typeof BPPanels !== 'undefined' && BPPanels.toast) BPPanels.toast('📷 生成失败：' + (e.message || '画布不可用'));
+      return false;
+    }
+  }
+
+  return { make, makeFact, makeEpoch };
 })();

@@ -77,6 +77,13 @@ const BPPanels = (() => {
       dv.textContent = dtVoiceOn ? '🔊 旁白中' : '🔊 旁白';
       if (!dtVoiceOn && typeof BPTTS !== 'undefined') BPTTS.stop();
     });
+    /* v34 深时纪元明信片：古地球视图 + 纪元信息 */
+    const dp = $('dtPc');
+    if (dp) dp.addEventListener('click', () => {
+      const ep = (typeof BP_DEEPTIME !== 'undefined') && BPDeepTime.currentEpoch &&
+        BP_DEEPTIME.find(e => e.id === BPDeepTime.currentEpoch);
+      if (ep && typeof BPPostcard !== 'undefined' && BPPostcard.makeEpoch) BPPostcard.makeEpoch(ep);
+    });
     BPDeepTime.onEpoch = (epoch) => {
       renderDtInfo(epoch);
       if (dtVoiceOn && typeof BPTTS !== 'undefined') {
