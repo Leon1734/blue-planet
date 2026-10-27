@@ -169,5 +169,110 @@ const BPInsights = (() => {
     setTimeout(() => URL.revokeObjectURL(a.href), 3000);
   }
 
-  return { render, exportReport };
+  /* v35 网页版学习报告：亮色排版 + 进度条 + 表格，可直接打印成 PDF */
+  function buildReportHtml() {
+    const pf = BPGame.profile;
+    const vSet = new Set(pf.visited || []);
+    const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    const dateStr = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const pctAll = pf.visited.length / BP_POIS.length * 100;
+    const earned = (pf.badges || [])
+      .map(id => BPGame.badges.find(b => b.id === id)).filter(b => b && b.t);
+
+    const bar = (pct, color) =>
+      `<span class="bar"><i style="width:${Math.min(100, pct).toFixed(1)}%;background:${color || '#3DBE8B'}"></i></span>`;
+
+    const modRows = BP_MODULES.map(m => {
+      const all = BP_POIS.filter(p => p.module === m.id);
+      const done = all.filter(p => vSet.has(p.id)).length;
+      const pct = all.length ? done / all.length * 100 : 0;
+      return `<tr><td><span class="dot" style="background:${m.color}"></span>${esc(m.name)}</td>
+        <td class="num">${done}/${all.length}</td><td>${bar(pct, m.color)}<em>${pct.toFixed(0)}%</em></td></tr>`;
+    }).join('');
+
+    const favList = (pf.favs || []).map(id => BP_POIS.find(p => p.id === id)).filter(Boolean);
+    const favHtml = favList.length
+      ? `<div class="fav-grid">${favList.map(p => {
+          const m = BP_MODULES.find(x => x.id === p.module);
+          return `<span class="fav-chip"><span class="dot" style="background:${m ? m.color : '#8FC8E8'}"></span>${esc(p.title)}</span>`;
+        }).join('')}</div>`
+      : '<p class="empty">还没有收藏，遇到喜欢的知识点点 ⭐ 收藏吧。</p>';
+
+    const listHtml = BP_MODULES.map(m => {
+      const done = BP_POIS.filter(p => p.module === m.id && vSet.has(p.id));
+      if (!done.length) return '';
+      return `<h3><span class="dot" style="background:${m.color}"></span>${esc(m.name)}（${done.length}）</h3>
+        <ul class="cols">${done.map(p => `<li>${esc(p.title)}</li>`).join('')}</ul>`;
+    }).join('') || '<p class="empty">还没有探索记录，快去点亮第一个知识点吧！</p>';
+
+    return `<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>蓝色星球学习报告 ${dateStr}</title>
+<style>
+body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;max-width:820px;margin:0 auto;padding:36px 24px;color:#1c3242;line-height:1.75;background:#fff}
+h1{font-size:24px;margin:0 0 2px}
+.meta{color:#7d97ad;font-size:13px;margin-bottom:18px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 20px}
+.chip{background:#eef5fa;border:1px solid #d7e6f0;border-radius:999px;padding:3px 13px;font-size:13px}
+.chip b{color:#0d1b2a}
+h2{font-size:16px;margin:26px 0 10px;padding-left:9px;border-left:4px solid #3DBE8B}
+.bar{display:inline-block;vertical-align:middle;width:180px;height:10px;background:#e8eef3;border-radius:6px;overflow:hidden;margin-right:8px}
+.bar i{display:block;height:100%;border-radius:6px}
+table{width:100%;border-collapse:collapse}
+td,th{padding:8px 6px;border-bottom:1px solid #e4edf3;text-align:left;font-size:14px}
+td .dot,th .dot,h3 .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.num{white-space:nowrap;color:#5c788d}
+td em{font-style:normal;color:#7d97ad;font-size:12.5px}
+.badge{display:inline-block;background:#fff7e0;border:1px solid #f0d98c;border-radius:8px;padding:3px 11px;margin:3px 4px 3px 0;font-size:13px}
+.fav-grid{display:flex;flex-wrap:wrap;gap:7px}
+.fav-chip{background:#fdf6e7;border:1px solid #f2e3b8;border-radius:999px;padding:3px 12px;font-size:13px}
+ul.cols{columns:2;margin:6px 0 14px;padding-left:22px}
+ul.cols li{font-size:13.5px;margin-bottom:2px;break-inside:avoid}
+h3{font-size:14px;margin:16px 0 4px}
+.empty{color:#9ab2c4;font-size:13.5px}
+footer{margin-top:30px;padding-top:12px;border-top:1px solid #e4edf3;color:#8aa2b5;font-size:12.5px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px}
+@media print{body{padding:0}.bar{width:150px}}
+</style></head><body>
+<h1>🌍 蓝色星球 · 学习报告</h1>
+<div class="meta">生成时间 ${dateStr} · 会转的地理课本 leon1734.github.io/blue-planet</div>
+<div class="chips">
+  <span class="chip">已探索 <b>${pf.visited.length}</b> / ${BP_POIS.length}（${pctAll.toFixed(1)}%）</span>
+  ${pf.quizBest ? `<span class="chip">闯关最佳 <b>${pf.quizBest}</b> 分</span>` : ''}
+  ${pf.puzzleWins ? `<span class="chip">拼图完成 <b>${pf.puzzleWins}</b> 次</span>` : ''}
+  <span class="chip">徽章 <b>${earned.length}</b> 枚</span>
+  <span class="chip">收藏 <b>${favList.length}</b> 个</span>
+</div>
+<h2>总体进度</h2>
+<div>${bar(pctAll)}<em style="color:#7d97ad;font-size:13px">${pctAll.toFixed(1)}%</em></div>
+<h2>分模块进度</h2>
+<table><tr><th>模块</th><th>点亮</th><th>进度</th></tr>${modRows}</table>
+<h2>徽章墙</h2>
+${earned.length ? earned.map(b => `<span class="badge">${b.icon || '🏅'} ${esc(b.t)}</span>`).join('') : '<p class="empty">还没有徽章，去解锁第一枚吧。</p>'}
+<h2>我的收藏</h2>
+${favHtml}
+<h2>已探索知识点</h2>
+${listHtml}
+<footer><span>🌍 蓝色星球 · 会转的地理课本</span><span>leon1734.github.io/blue-planet · ${dateStr}</span></footer>
+</body></html>`;
+  }
+
+  function exportReportHtml() {
+    try {
+      const blob = new Blob([buildReportHtml()], { type: 'text/html;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      const d = new Date();
+      const pad = (n) => String(n).padStart(2, '0');
+      a.download = `蓝色星球学习报告_${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}.html`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+      if (typeof BPPanels !== 'undefined' && BPPanels.toast) BPPanels.toast('🌐 网页报告已下载（浏览器打开可打印成 PDF）');
+      return true;
+    } catch (e) { return false; }
+  }
+
+  return { render, exportReport, exportReportHtml, buildReportHtml };
 })();

@@ -380,6 +380,8 @@ const BPPanels = (() => {
     $('badgeClose').addEventListener('click', closeModal);
     const iex = $('insExport');
     if (iex) iex.addEventListener('click', () => BPInsights.exportReport());
+    const iexh = $('insExportHtml');
+    if (iexh) iexh.addEventListener('click', () => BPInsights.exportReportHtml());
     document.querySelectorAll('.modal').forEach(m => {
       m.addEventListener('click', (e) => { if (e.target === m) closeModal(); });
     });
