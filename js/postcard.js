@@ -9,6 +9,11 @@ const BPPostcard = (() => {
 
   const W = 1080, H = 1440;   // 3:4 竖版，适合聊天分享
 
+  /* v37 站址（file:// 下固定指向线上站，二维码才扫得开） */
+  const SITE = (location.protocol === 'http:' || location.protocol === 'https:')
+    ? location.origin + location.pathname
+    : 'https://leon1734.github.io/blue-planet/';
+
   /* 中文按宽度折行；超行截断加省略号 */
   function wrap(ctx, text, maxW, maxLines) {
     const lines = [];
@@ -147,10 +152,7 @@ const BPPostcard = (() => {
       /* 2. 底版 + 地球快照 */
       const imgH = drawShell(ctx, modColor);
       /* v36 二维码邮票：扫码直达该知识点 */
-      const shareUrl = location.protocol.startsWith('http')
-        ? location.origin + location.pathname + '#poi=' + poi.id
-        : 'https://leon1734.github.io/blue-planet/#poi=' + poi.id;
-      stampQR(ctx, shareUrl);
+      stampQR(ctx, SITE + '#poi=' + poi.id);
 
       /* 4. 信息区：模块胶囊 + 难度星 */
       let y = imgH + 66;
@@ -234,6 +236,8 @@ const BPPostcard = (() => {
       ctx.fillStyle = '#F2F8FD';
       for (const ln of wrap(ctx, factText || '', W - 128, 8)) { ctx.fillText(ln, 64, y + 20); y += 62; }
 
+      /* v37 二维码邮票：扫码打开线上课堂 */
+      stampQR(ctx, SITE);
       drawFooter(ctx);
       download(ctx, '蓝色星球_冷知识.png');
       return true;
@@ -288,6 +292,8 @@ const BPPostcard = (() => {
         if (lifeLines.length) ctx.fillText(lifeLines[0], 64, y + 12);
       }
 
+      /* v37 二维码邮票：扫码直达该纪元（#dt= 深链，见 main.js） */
+      stampQR(ctx, SITE + '#dt=' + epoch.id);
       drawFooter(ctx);
       download(ctx, `蓝色星球_深时_${epoch.t}.png`);
       return true;

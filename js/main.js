@@ -348,13 +348,20 @@
         BPScene.flyTo(24, 105, 345, 2600);
         /* v31 新手引导：首次访问自动弹出 */
         if (typeof BPOnboard !== 'undefined') BPOnboard.maybeShow();
-        /* v16 hash 分享：#poi=everest 直接飞达 */
-        const hm = location.hash.match(/poi=(\w+)/);
+        /* v16 hash 分享：#poi=everest 直接飞达（v37 修复：id 含连字符须 [\w-]，否则
+           deccan-traps 等多数分享链接失效） */
+        const hm = location.hash.match(/poi=([\w-]+)/);
         if (hm) {
           setTimeout(() => {
             const hp = BP_POIS.find(p => p.id === hm[1]);
             if (hp && typeof BPPanels !== 'undefined') BPPanels.selectApi.selectPoi(hp.id);
           }, 3000);
+        } else {
+          /* v37 纪元分享：#dt=jurassic 直接进入对应深时纪元 */
+          const hd = location.hash.match(/dt=([\w-]+)/);
+          if (hd && typeof BPPanels !== 'undefined') {
+            setTimeout(() => BPPanels.openEpochAt(hd[1]), 3200);
+          }
         }
       })
       .catch(err => {
