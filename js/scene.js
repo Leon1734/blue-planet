@@ -228,6 +228,31 @@ const BPScene = (() => {
     earthGroup.add(plateGroup);
   }
 
+  /* ---------- 自适应画质（v38）：帧率持续偏低时逐步降像素比 ----------
+     基准 = min(设备像素比, 1.75)；每 120 个有效帧统计一次均值，
+     <27fps 降一档（×0.8，下限 0.85），最多两档；>250ms 的大间隔帧
+     （切页回来）不计入，避免后台节流误降。 */
+  const quality = { level: 0, base: 1.75, acc: 0, n: 0 };
+  const QUALITY_MAX_STEP = 2, QUALITY_FPS = 27;
+  function governQuality(dtSec) {
+    if (quality.level >= QUALITY_MAX_STEP) return;
+    if (!(dtSec > 0) || dtSec > 0.25) return;
+    quality.acc += dtSec; quality.n++;
+    if (quality.n < 120) return;
+    const fps = quality.n / quality.acc;
+    quality.acc = 0; quality.n = 0;
+    if (fps < QUALITY_FPS) {
+      quality.level++;
+      renderer.setPixelRatio(Math.max(0.85, quality.base * Math.pow(0.8, quality.level)));
+      resize();
+    }
+  }
+  function resetQuality() {
+    quality.level = 0; quality.acc = 0; quality.n = 0;
+    renderer.setPixelRatio(quality.base);
+    resize();
+  }
+
   let BPTexturesCache = null; // 贴图缓存引用（buildStars 使用）
 
   /* ---------- 初始化 ---------- */
@@ -235,7 +260,8 @@ const BPScene = (() => {
     BPTexturesCache = textures;
 
     renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+    quality.base = Math.min(window.devicePixelRatio || 1, 1.75);
+    renderer.setPixelRatio(quality.base);
     renderer.setSize(Math.max(1, window.innerWidth), Math.max(1, window.innerHeight));
     renderer.setClearColor(0x04070d, 1);
 
@@ -372,6 +398,7 @@ const BPScene = (() => {
     updateSun();
     stepFlight(dtMs);
     if (!flying) controls.update();
+    governQuality(dtSec);
 
     // 自转：图层开关 + 无卡片 + 用户停止交互 3 秒后
     const idle = nowSec - spinState.lastUserTouch > 3;
@@ -395,7 +422,9 @@ const BPScene = (() => {
 
   return {
     R, RELIEF, init, update, render, resize, flyTo, isFlying, latLonToVec3,
-    setPixelRatio,
+    setPixelRatio, resetQuality,
+    get qualityLevel() { return quality.level; },
+    get pixelRatio() { return renderer ? renderer.getPixelRatio() : 0; },
     time: timeApi,
     sunDir,
     get camera() { return camera; },
