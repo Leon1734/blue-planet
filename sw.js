@@ -5,7 +5,7 @@
    版本号随 ?v= 一起升级（当前 bp8）。
    ============================================================ */
 
-const CACHE = 'blueplanet-v39';
+const CACHE = 'blueplanet-v40';
 const ASSETS = [
   './',
   './index.html',
@@ -14,6 +14,7 @@ const ASSETS = [
   './css/v3.css',
   './js/lib/three.min.js',
   './js/lib/OrbitControls.js',
+  './js/lib/qrcode.js',
   './js/textures-data.js',
   './js/borders-data.js',
   './js/data.js',

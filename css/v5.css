@@ -135,6 +135,9 @@
   border-radius: 8px; padding: 3px 9px;
 }
 .dt-facts b { color: var(--c-orange); font-weight: 600; }
+/* v36 纪元相关知识点 */
+.dt-rel-title { font-size: 10.5px; color: var(--c-text-dim); margin: 9px 0 4px; letter-spacing: 1px; }
+.dt-rel { display: inline-block; margin-right: 6px; margin-bottom: 4px; }
 @media (max-width: 860px) {
   #dtPanel { bottom: 192px; }
 }

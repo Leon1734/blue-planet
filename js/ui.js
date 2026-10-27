@@ -237,6 +237,17 @@ const BPUI = (() => {
     if (pcBtn) pcBtn.onclick = () => {
       if (typeof BPPostcard !== 'undefined') BPPostcard.make(poi);
     };
+    /* v36 纪元百科条目：一键进入对应深时视角 */
+    const epBtn = $('cardEpoch');
+    if (epBtn) {
+      const mEpoch = /^epoch-(\w+)$/.exec(poi.id);
+      const epochOk = mEpoch && typeof BP_DEEPTIME !== 'undefined' &&
+        BP_DEEPTIME.some(e => e.id === mEpoch[1]);
+      epBtn.classList.toggle('hidden', !epochOk);
+      epBtn.onclick = epochOk ? () => {
+        if (typeof BPPanels !== 'undefined' && BPPanels.openEpochAt) BPPanels.openEpochAt(mEpoch[1]);
+      } : null;
+    }
     /* v24 收藏按钮 */
     const favBtn = $('cardFav');
     if (favBtn) {

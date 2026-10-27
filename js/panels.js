@@ -572,6 +572,12 @@ const BPPanels = (() => {
     const box = $('dtInfo');
     const poiId = 'epoch-' + epoch.id;
     const hasPoi = typeof BP_POIS !== 'undefined' && BP_POIS.some(p => p.id === poiId);
+    /* v36 相关知识点（手工精选映射，宁缺毋滥） */
+    const relIds = (typeof BP_DEEPTIME_RELATED !== 'undefined' && BP_DEEPTIME_RELATED[epoch.id]) || [];
+    const relBtns = relIds.map(id => {
+      const p = (typeof BP_POIS !== 'undefined') && BP_POIS.find(x => x.id === id);
+      return p ? `<button class="today-jump dt-rel" data-poi="${p.id}">📍 ${p.title} →</button>` : '';
+    }).join('');
     box.innerHTML =
       `<div class="cut-info-title"><span class="dot" style="background:${epoch.color}"></span>${epoch.t}${epoch.ma ? `（${epoch.ma} 百万年前）` : ''}</div>` +
       `<div class="cut-info-row">${epoch.brief}</div>` +
@@ -579,12 +585,20 @@ const BPPanels = (() => {
       `<span>大气氧 <b>${epoch.oxygen}</b></span><span>CO₂ <b>${epoch.co2}</b></span><span>海平面 <b>${epoch.sea}</b></span>` +
       `</div>` +
       `<div class="cut-info-desc">${epoch.life}</div>` +
-      (hasPoi ? `<button class="today-jump" id="dtJump">📍 看这个时代的百科条目 →</button>` : '');
+      (hasPoi ? `<button class="today-jump" id="dtJump">📍 看这个时代的百科条目 →</button>` : '') +
+      (relBtns ? `<div class="dt-rel-title">🔗 相关知识点</div>${relBtns}` : '');
     box.classList.remove('hidden');
     const jb = $('dtJump');
     if (jb) jb.addEventListener('click', () => {
       toggleDeeptime();                      // 先退出深时回现代地球
       if (api.selectPoi) api.selectPoi(poiId);
+    });
+    /* v36 相关知识点：退出深时回现代地球后跳转 */
+    box.querySelectorAll('.dt-rel').forEach(b => {
+      b.addEventListener('click', () => {
+        if (BPDeepTime.isActive) toggleDeeptime();
+        if (api.selectPoi) api.selectPoi(b.dataset.poi);
+      });
     });
   }
 
@@ -597,8 +611,17 @@ const BPPanels = (() => {
     $('dailyGo').addEventListener('click', () => api.selectPoi(poi.id));
   }
 
+  /* v36 纪元百科卡片 → 一键进入对应深时视角 */
+  function openEpochAt(epochId) {
+    if (typeof BPDeepTime === 'undefined' || typeof BP_DEEPTIME === 'undefined') return;
+    if (!BP_DEEPTIME.some(e => e.id === epochId)) return;
+    if (!BPDeepTime.isActive) enterDt();     // enterDt 内已含收起卡片/标注
+    BPDeepTime.setEpoch(epochId, 2200);
+  }
+
   return {
     init, toast, closeModal, openBadges, openQuiz, openInsights,
+    openEpochAt,
     get selectApi() { return api; },
   };
 })();

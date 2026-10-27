@@ -89,6 +89,50 @@ const BPPostcard = (() => {
     if (typeof BPPanels !== 'undefined' && BPPanels.toast) BPPanels.toast('📷 明信片已生成并下载');
   }
 
+  /* v36 二维码邮票：右上角白底小方码（qrcode-generator 同步绘制）
+     url 传入 https://leon1734.github.io/blue-planet/#poi=xxx，扫码直达对应知识点 */
+  function stampQR(ctx, url) {
+    try {
+      if (typeof qrcode === 'undefined' || !url) return;
+      const qr = qrcode(0, 'M');
+      qr.addData(url);
+      qr.make();
+      const n = qr.getModuleCount();
+      const px = 3;                          // 每模块 3px → 33 模块约 99px
+      const size = n * px;
+      const x0 = W - 56 - size, y0 = 56;     // 右上角，避开 26px 描边
+      ctx.fillStyle = 'rgba(255,255,255,0.92)';
+      ctx.fillRect(x0 - 10, y0 - 10, size + 20, size + 20);
+      ctx.fillStyle = '#0D1B2A';
+      for (let r = 0; r < n; r++) {
+        for (let c = 0; c < n; c++) {
+          if (qr.isDark(r, c)) ctx.fillRect(x0 + c * px, y0 + r * px, px, px);
+        }
+      }
+    } catch (e) { /* 二维码失败不影响明信片 */ }
+  }
+
+  /* v36 供报告等模块生成二维码 PNG dataURL */
+  function makeQRDataURL(text, px) {
+    const qr = qrcode(0, 'M');
+    qr.addData(String(text));
+    qr.make();
+    const n = qr.getModuleCount();
+    const cell = px || 4;
+    const c = document.createElement('canvas');
+    c.width = c.height = n * cell + 16;
+    const g = c.getContext('2d');
+    g.fillStyle = '#fff';
+    g.fillRect(0, 0, c.width, c.height);
+    g.fillStyle = '#0D1B2A';
+    for (let r = 0; r < n; r++) {
+      for (let col = 0; col < n; col++) {
+        if (qr.isDark(r, col)) g.fillRect(8 + col * cell, 8 + r * cell, cell, cell);
+      }
+    }
+    return c.toDataURL('image/png');
+  }
+
   function make(poi) {
     try {
       /* 1. 现渲一帧并同 tick 取样（避免后台/节流取到空缓冲） */
@@ -102,6 +146,11 @@ const BPPostcard = (() => {
 
       /* 2. 底版 + 地球快照 */
       const imgH = drawShell(ctx, modColor);
+      /* v36 二维码邮票：扫码直达该知识点 */
+      const shareUrl = location.protocol.startsWith('http')
+        ? location.origin + location.pathname + '#poi=' + poi.id
+        : 'https://leon1734.github.io/blue-planet/#poi=' + poi.id;
+      stampQR(ctx, shareUrl);
 
       /* 4. 信息区：模块胶囊 + 难度星 */
       let y = imgH + 66;

@@ -200,6 +200,20 @@ const BPInsights = (() => {
         }).join('')}</div>`
       : '<p class="empty">还没有收藏，遇到喜欢的知识点点 ⭐ 收藏吧。</p>';
 
+    /* v36 页脚二维码：扫码直达线上站（离线时仍指向 Pages 站址） */
+    let qrImg = '';
+    try {
+      if (typeof qrcode !== 'undefined') {
+        const site = location.protocol.startsWith('http')
+          ? (location.origin + location.pathname)
+          : 'https://leon1734.github.io/blue-planet/';
+        const qr = qrcode(0, 'M');
+        qr.addData(site);
+        qr.make();
+        qrImg = `<img class="qr" src="${qr.createDataURL(5, 8)}" alt="扫码打开蓝色星球" width="86" height="86">`;
+      }
+    } catch (e) { /* 二维码失败不影响报告 */ }
+
     const listHtml = BP_MODULES.map(m => {
       const done = BP_POIS.filter(p => p.module === m.id && vSet.has(p.id));
       if (!done.length) return '';
@@ -233,7 +247,10 @@ ul.cols{columns:2;margin:6px 0 14px;padding-left:22px}
 ul.cols li{font-size:13.5px;margin-bottom:2px;break-inside:avoid}
 h3{font-size:14px;margin:16px 0 4px}
 .empty{color:#9ab2c4;font-size:13.5px}
-footer{margin-top:30px;padding-top:12px;border-top:1px solid #e4edf3;color:#8aa2b5;font-size:12.5px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px}
+footer{margin-top:30px;padding-top:12px;border-top:1px solid #e4edf3;color:#8aa2b5;font-size:12.5px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px}
+.qr-wrap{display:flex;align-items:center;gap:6px;text-align:left}
+.qr-wrap i{font-style:normal;font-size:11px;line-height:1.35;color:#8aa2b5}
+.qr{display:block;border:1px solid #e4edf3;border-radius:4px}
 @media print{body{padding:0}.bar{width:150px}}
 </style></head><body>
 <h1>🌍 蓝色星球 · 学习报告</h1>
@@ -255,7 +272,7 @@ ${earned.length ? earned.map(b => `<span class="badge">${b.icon || '🏅'} ${esc
 ${favHtml}
 <h2>已探索知识点</h2>
 ${listHtml}
-<footer><span>🌍 蓝色星球 · 会转的地理课本</span><span>leon1734.github.io/blue-planet · ${dateStr}</span></footer>
+<footer><span>🌍 蓝色星球 · 会转的地理课本</span><span class="qr-wrap">${qrImg}<i>扫码打开<br>线上课堂</i></span><span>leon1734.github.io/blue-planet · ${dateStr}</span></footer>
 </body></html>`;
   }
 
