@@ -25,6 +25,9 @@ const BPLabels = (() => {
     island:  { pre: '',   color: '#AFDFC4' },
     canal:   { pre: '',   color: '#F0C98F' },
     pole:    { pre: '❄', color: '#BFE3FF' },
+    /* v39 洋流：暖流暖橙 / 寒流冰蓝（与粒子层配色一致） */
+    currentw: { pre: '',  color: '#FFC9A0' },
+    currentc: { pre: '',  color: '#A5DCF5' },
   };
 
   function build() {

@@ -9,7 +9,17 @@
 const BPGame = (() => {
 
   const KEY = 'bp_profile_v1';
-  let profile = { visited: [], favs: [], badges: [], quizBest: 0, wrong: {} };
+  let profile = { visited: [], favs: [], badges: [], quizBest: 0, wrong: {}, days: {} };
+
+  /* v39 每日打卡：点亮知识点 / 完成闯关各记 1 次（学习报告热力图数据源） */
+  function bumpDay() {
+    try {
+      const d = new Date();
+      const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      profile.days = profile.days || {};
+      profile.days[key] = (profile.days[key] || 0) + 1;
+    } catch (e) { /* 不影响主流程 */ }
+  }
 
   /* ---------- 档案 ---------- */
   function load() {
@@ -46,6 +56,7 @@ const BPGame = (() => {
   /* 访问知识点 → 返回新解锁徽章列表 */
   function markVisited(poiId) {
     if (!profile.visited.includes(poiId)) profile.visited.push(poiId);
+    bumpDay();
     const fresh = [];
     const grant = (id) => { if (!earned(id)) { profile.badges.push(id); fresh.push(id); } };
     if (profile.visited.length >= 1) grant('first');
@@ -59,6 +70,7 @@ const BPGame = (() => {
 
   function markQuiz(score, total) {
     if (score > (profile.quizBest || 0)) { profile.quizBest = score; }
+    bumpDay();
     const fresh = [];
     const grant = (id) => { if (!earned(id)) { profile.badges.push(id); fresh.push(id); } };
     if (score >= Math.ceil(total * 0.6)) grant('quiz60');

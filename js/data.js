@@ -1762,6 +1762,19 @@ const BP_POIS = [
       trench 海沟 sea 海 island 岛 canal 运河 pole 极 */
 const BP_LABELS = [
   /* z=1：一眼可见的世界地标 */
+  /* v39 洋流标签：暖流 currentw 暖橙 / 寒流 currentc 冰蓝（z2 远观标志性 / z3 放大进阶） */
+  { t: '湾流', lat: 37, lon: -73, k: 'currentw', z: 2 },
+  { t: '黑潮', lat: 30, lon: 131, k: 'currentw', z: 2 },
+  { t: '秘鲁寒流', lat: -15, lon: -76, k: 'currentc', z: 2 },
+  { t: '本格拉寒流', lat: -20, lon: 13.5, k: 'currentc', z: 2 },
+  { t: '加那利寒流', lat: 30, lon: -13, k: 'currentc', z: 2 },
+  { t: '南极绕极流', lat: -55, lon: 60, k: 'currentc', z: 2 },
+  { t: '巴西暖流', lat: -22, lon: -41, k: 'currentw', z: 3 },
+  { t: '阿古拉斯暖流', lat: -28, lon: 35.5, k: 'currentw', z: 3 },
+  { t: '东澳大利亚暖流', lat: -32, lon: 153, k: 'currentw', z: 3 },
+  { t: '千岛寒流（亲潮）', lat: 48, lon: 152, k: 'currentc', z: 3 },
+  { t: '拉布拉多寒流', lat: 55, lon: -53, k: 'currentc', z: 3 },
+  { t: '加利福尼亚寒流', lat: 33, lon: -120, k: 'currentc', z: 3 },
   { t: '珠穆朗玛峰 8849m', lat: 27.99, lon: 86.93, k: 'peak', z: 1 },
   { t: '喜马拉雅山脉', lat: 29.5, lon: 84.0, k: 'range', z: 1 },
   { t: '安第斯山脉', lat: -20, lon: -68.5, k: 'range', z: 1 },

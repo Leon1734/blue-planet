@@ -242,6 +242,7 @@ const BP_DEEPTIME_RELATED = {
   cambrian: ['hydrothermal'],          // 深海热液与生命起源，呼应寒武纪大爆发
   cretaceous: ['deccan'],              // 白垩纪末大灭绝的另一嫌疑人：德干暗色岩
   eocene: ['himalaya'],                // 始新世印度撞上欧亚，喜马拉雅开始隆起
+  oligocene: ['ross-ice-shelf'],       // 渐新世南极冻成冰盖（v39）
   neogene: ['eafrica-rift'],           // 新近纪东非裂谷形成，与人类起源密切相关
-  present: ['nile', 'polder'],         // 全新世：大河文明兴起、人类与海争地
+  present: ['nile', 'polder', 'tuvalu'], // 全新世：大河文明、与海争地、海平面与岛国（v39）
 };

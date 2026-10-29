@@ -192,6 +192,28 @@ const BPInsights = (() => {
         <td class="num">${done}/${all.length}</td><td>${bar(pct, m.color)}<em>${pct.toFixed(0)}%</em></td></tr>`;
     }).join('');
 
+    /* v39 打卡热力图：近 16 周 GitHub 风格网格（数据源 profile.days，v39 起记录） */
+    const days = pf.days || {};
+    const DAY = 86400000;
+    const end = new Date(); end.setHours(0, 0, 0, 0);
+    const dow = (end.getDay() + 6) % 7;   // 周一=0 … 周日=6
+    const HEAT_WEEKS = 16;
+    const start = new Date(end.getTime() - (HEAT_WEEKS * 7 - 1 - dow) * DAY);
+    let heatCols = '', activeDays = 0;
+    for (let w = 0; w < HEAT_WEEKS; w++) {
+      let col = '';
+      for (let d = 0; d < 7; d++) {
+        const t = new Date(start.getTime() + (w * 7 + d) * DAY);
+        const key = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
+        const n = days[key] || 0;
+        if (n > 0) activeDays++;
+        const lv = n === 0 ? 0 : n <= 2 ? 1 : n <= 4 ? 2 : 3;
+        const dim = t > end ? ' style="opacity:.18"' : '';
+        col += `<i class="hc lv${lv}"${dim} title="${key} · ${n} 次"></i>`;
+      }
+      heatCols += `<span class="hcol">${col}</span>`;
+    }
+
     const favList = (pf.favs || []).map(id => BP_POIS.find(p => p.id === id)).filter(Boolean);
     const favHtml = favList.length
       ? `<div class="fav-grid">${favList.map(p => {
@@ -251,6 +273,10 @@ footer{margin-top:30px;padding-top:12px;border-top:1px solid #e4edf3;color:#8aa2
 .qr-wrap{display:flex;align-items:center;gap:6px;text-align:left}
 .qr-wrap i{font-style:normal;font-size:11px;line-height:1.35;color:#8aa2b5}
 .qr{display:block;border:1px solid #e4edf3;border-radius:4px}
+.heat{display:flex;gap:3px;margin:4px 0 6px}
+.hcol{display:flex;flex-direction:column;gap:3px}
+.hc{width:11px;height:11px;border-radius:2px;background:#eef3f7}
+.hc.lv1{background:#bfe6cf}.hc.lv2{background:#67c98f}.hc.lv3{background:#2f9e5f}
 @media print{body{padding:0}.bar{width:150px}}
 </style></head><body>
 <h1>🌍 蓝色星球 · 学习报告</h1>
@@ -266,6 +292,9 @@ footer{margin-top:30px;padding-top:12px;border-top:1px solid #e4edf3;color:#8aa2
 <div>${bar(pctAll)}<em style="color:#7d97ad;font-size:13px">${pctAll.toFixed(1)}%</em></div>
 <h2>分模块进度</h2>
 <table><tr><th>模块</th><th>点亮</th><th>进度</th></tr>${modRows}</table>
+<h2>打卡热力图（近 16 周）</h2>
+<div class="heat">${heatCols}</div>
+<p class="empty">累计活跃 ${activeDays} 天 · 点亮知识点或完成一次闯关记 1 次（v39 起记录）</p>
 <h2>徽章墙</h2>
 ${earned.length ? earned.map(b => `<span class="badge">${b.icon || '🏅'} ${esc(b.t)}</span>`).join('') : '<p class="empty">还没有徽章，去解锁第一枚吧。</p>'}
 <h2>我的收藏</h2>
