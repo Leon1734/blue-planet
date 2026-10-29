@@ -276,13 +276,24 @@ const BPPanels = (() => {
     BP_QUIZ.forEach(q => { counts[q.m] = (counts[q.m] || 0) + 1; });
     const chips = [{ id: '', name: '🌍 全部混抽', color: '#E8F1F8', n: BP_QUIZ.length }]
       .concat(BP_MODULES.map(m => ({ id: m.id, name: m.name, color: m.color, n: counts[m.id] || 0 })));
+    /* v41 每日五题入口（置顶） */
+    const ds = (typeof BPGame.dailyState === 'function') && BPGame.dailyState();
+    const now = new Date();
+    const mmdd = `${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     box.innerHTML =
+      `<div class="quiz-wrong-row" style="margin:0 0 12px">
+        <button class="chip-btn ${ds ? '' : 'on'}" id="quizDailyGo">📝 每日五题 · ${mmdd}${ds ? `（今日已完成 ${ds.score}/${ds.total}）` : '（全网同题 · 5 道）'}</button>
+      </div>` +
       `<div class="quiz-pick-title">🎯 选择挑战范围</div>` +
       `<div class="quiz-pick-sub">每个范围随机 10 题，答完看解析</div>` +
       `<div class="cat-filters quiz-filters">` + chips.map(c =>
         `<button class="cat-chip" data-m="${c.id}">
           <span class="dot" style="background:${c.color}"></span>${c.name}<i>${c.n} 题</i>
         </button>`).join('') + `</div>`;
+    $('quizDailyGo').addEventListener('click', () => {
+      BPGame.startDaily();
+      renderQuiz();
+    });
     box.querySelectorAll('.cat-chip[data-m]').forEach(b => {
       b.addEventListener('click', () => {
         BPGame.startQuiz(b.dataset.m || undefined);
@@ -306,7 +317,8 @@ const BPPanels = (() => {
     const q = BPGame.quizState;
     const box = $('quizBody');
     if (!q) { box.innerHTML = ''; return; }
-    const label = q.wrongMode ? '📕 错题重练'
+    const label = q.daily ? '📝 每日五题'
+      : q.wrongMode ? '📕 错题重练'
       : (q.moduleId ? ((BP_MODULES.find(m => m.id === q.moduleId) || {}).name || '') : '');
     box.innerHTML =
       `<div class="quiz-progress">${label ? label + ' · ' : ''}第 ${q.idx + 1} / ${q.qs.length} 题 · 答对 ${q.score}</div>` +
@@ -340,20 +352,26 @@ const BPPanels = (() => {
   }
   function renderQuizResult(res) {
     const box = $('quizBody');
-    const scopeName = res.wrongMode ? '错题重练'
+    const scopeName = res.daily ? '📝 每日五题'
+      : res.wrongMode ? '错题重练'
       : (res.moduleId ? ((BP_MODULES.find(m => m.id === res.moduleId) || {}).name || '') : '全部范围');
     const wrongLine = res.wrongMode
       ? (res.wrongLeft === 0 ? '🎉 错题本已清空！' : `错题本还剩 ${res.wrongLeft} 道`)
       : '';
+    const dailyLine = res.daily ? `<div class="quiz-wrong-line">📅 全网同题 · 明天再来五道新的！</div>` : '';
+    const verdict = res.daily && res.score === res.total ? '🏆 满分！今天的地理之星就是你'
+      : res.score === res.total ? '🏆 满分！地理学家就是你了'
+      : res.score >= 6 ? '🎉 不错的基础，继续探索！' : '📖 多点点光柱再来挑战！';
     box.innerHTML =
       `<div class="quiz-result">
         <div class="quiz-scope">${scopeName} · 闯关完成</div>
         <div class="quiz-score">${res.score}<i>/${res.total}</i></div>
-        <div class="quiz-verdict">${res.score === res.total ? '🏆 满分！地理学家就是你了' :
-          res.score >= 6 ? '🎉 不错的基础，继续探索！' : '📖 多点点光柱再来挑战！'}</div>
+        <div class="quiz-verdict">${verdict}</div>
         ${wrongLine ? `<div class="quiz-wrong-line">${wrongLine}</div>` : ''}
+        ${dailyLine}
         <div class="quiz-best">历史最佳：${BPGame.profile.quizBest} 分</div>
         <div class="quiz-actions">
+          ${res.daily ? `<button class="chip-btn" id="quizDailyShare">📋 复制成绩</button>` : ''}
           ${res.moduleId && !res.wrongMode ? `<button class="chip-btn" id="quizAgainMod">再战本模块</button>` : ''}
           <button class="chip-btn" id="quizAgain">换个范围</button>
           <button class="chip-btn warn" id="quizClose2">关闭</button>
@@ -361,6 +379,15 @@ const BPPanels = (() => {
       </div>`;
     const am = $('quizAgainMod');
     if (am) am.addEventListener('click', () => { BPGame.startQuiz(res.moduleId); renderQuiz(); });
+    const ds = $('quizDailyShare');
+    if (ds) ds.addEventListener('click', () => {
+      const d = new Date();
+      const text = `📝 蓝色星球每日五题 ${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}：${res.score}/${res.total} · 会转的地理课本`;
+      navigator.clipboard.writeText(text).then(() => {
+        ds.textContent = '✅ 已复制';
+        setTimeout(() => { ds.textContent = '📋 复制成绩'; }, 2000);
+      }).catch(() => {});
+    });
     $('quizAgain').addEventListener('click', openQuiz);
     $('quizClose2').addEventListener('click', closeModal);
     res.fresh.forEach(b => {

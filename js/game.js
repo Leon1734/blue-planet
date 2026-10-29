@@ -9,15 +9,19 @@
 const BPGame = (() => {
 
   const KEY = 'bp_profile_v1';
-  let profile = { visited: [], favs: [], badges: [], quizBest: 0, wrong: {}, days: {} };
+  let profile = { visited: [], favs: [], badges: [], quizBest: 0, wrong: {}, days: {}, daily: null };
+
+  /* v41 日期键（每日五题/打卡共用）：YYYY-MM-DD（本地时区） */
+  function dayKey(d = new Date()) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
 
   /* v39 每日打卡：点亮知识点 / 完成闯关各记 1 次（学习报告热力图数据源） */
   function bumpDay() {
     try {
-      const d = new Date();
-      const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
       profile.days = profile.days || {};
-      profile.days[key] = (profile.days[key] || 0) + 1;
+      profile.days[dayKey()] = (profile.days[dayKey()] || 0) + 1;
+      window.dispatchEvent(new CustomEvent('bp-activity'));   // v41 顶栏连击角标刷新
     } catch (e) { /* 不影响主流程 */ }
   }
 
@@ -152,6 +156,34 @@ const BPGame = (() => {
       moduleId: moduleId || null, wrongMode: !!opts.wrong };
   }
 
+  /* ---------- v41 每日五题（日期播种，全网同题） ---------- */
+  function mulberry32(seed) {
+    return function () {
+      seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function dailyQuestions(dateStr) {
+    let seed = 0;
+    for (const ch of dateStr) seed = (seed * 31 + ch.charCodeAt(0)) >>> 0;
+    const rnd = mulberry32(seed);
+    const idx = BP_QUIZ.map((_, i) => i);
+    for (let i = idx.length - 1; i > 0; i--) {
+      const j = Math.floor(rnd() * (i + 1));
+      [idx[i], idx[j]] = [idx[j], idx[i]];
+    }
+    return idx.slice(0, 5).map(i => BP_QUIZ[i]);   // 顺序也由日期决定 → 全网同题同序
+  }
+  function startDaily() {
+    quiz = { qs: dailyQuestions(dayKey()), idx: 0, score: 0, answered: false,
+      moduleId: null, wrongMode: false, daily: true };
+  }
+  function dailyState() {
+    return (profile.daily && profile.daily.date === dayKey()) ? profile.daily : null;
+  }
+
   function answerQuiz(opt) {
     if (!quiz || quiz.answered) return null;
     quiz.answered = true;
@@ -170,9 +202,11 @@ const BPGame = (() => {
     quiz.answered = false;
     quiz.idx++;
     if (quiz.idx >= quiz.qs.length) {
+      /* v41 每日五题成绩（markQuiz 内部会 save，一并落盘） */
+      if (quiz.daily) profile.daily = { date: dayKey(), score: quiz.score, total: quiz.qs.length };
       const fresh = markQuiz(quiz.score, quiz.qs.length);
       const result = { done: true, score: quiz.score, total: quiz.qs.length, fresh,
-        moduleId: quiz.moduleId, wrongMode: quiz.wrongMode,
+        moduleId: quiz.moduleId, wrongMode: quiz.wrongMode, daily: quiz.daily,
         wrongLeft: Object.keys(profile.wrong || {}).length };
       quiz = null;
       return result;
@@ -192,7 +226,7 @@ const BPGame = (() => {
 
   return {
     load, markVisited, markQuiz, markRandom, markPuzzle, dailyPoi, startQuiz, answerQuiz, nextQuiz,
-    toggleFav, isFav, getStreak,
+    toggleFav, isFav, getStreak, startDaily, dailyState,
     get profile() { return profile; },
     get badges() { return badgeDef(); },
     get quizState() { return quiz; },

@@ -208,6 +208,18 @@
 
   /* ---------- UI 回调 ---------- */
   function bindUI() {
+    /* v41 顶栏连击角标：bp-activity 事件（打卡/闯关）时刷新，点击开看板 */
+    const refreshStreakChip = () => {
+      const chip = document.getElementById('streakChip');
+      if (!chip || typeof BPGame.getStreak !== 'function') return;
+      const st = BPGame.getStreak();
+      chip.textContent = st > 0 ? '🔥' + st : '';
+      chip.classList.toggle('hidden', !(st > 0));
+    };
+    window.addEventListener('bp-activity', refreshStreakChip);
+    if (typeof BPGame.getStreak === 'function') refreshStreakChip();
+    const sc = document.getElementById('streakChip');
+    if (sc) sc.addEventListener('click', () => { if (typeof BPPanels !== 'undefined') BPPanels.openInsights(); });
     BPUI.cb.onModule = (moduleId) => {
       BPMarkers.setModuleFilter(moduleId);
       if (moduleId) {
