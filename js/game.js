@@ -21,6 +21,22 @@ const BPGame = (() => {
     } catch (e) { /* 不影响主流程 */ }
   }
 
+  /* v40 连击：从今天（未打卡则从昨天）往前的连续活跃天数 */
+  function getStreak() {
+    const days = profile.days || {};
+    const DAY = 86400000;
+    const key = (t) => {
+      const d = new Date(t);
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    };
+    const midnight = new Date(); midnight.setHours(0, 0, 0, 0);
+    let t = midnight.getTime();
+    if (!days[key(t)]) t -= DAY;
+    let n = 0;
+    while (days[key(t)]) { n++; t -= DAY; }
+    return n;
+  }
+
   /* ---------- 档案 ---------- */
   function load() {
     try {
@@ -44,6 +60,8 @@ const BPGame = (() => {
     list.push({ id: 'random20', icon: '🎲', t: '探险家', d: '随机探索 20 个不同知识点' });
     list.push({ id: 'random50', icon: '🛸', t: '随机大师', d: '随机探索累计 50 次' });
     list.push({ id: 'puzzle', icon: '🧩', t: '拼图达人', d: '完成一次大陆拼图' });
+    list.push({ id: 'streak3', icon: '🔥', t: '三日连击', d: '连续 3 天点亮地球' });
+    list.push({ id: 'streak7', icon: '⚡', t: '七日连击', d: '连续 7 天点亮地球' });
     return list;
   };
   function iconOf(mid) {
@@ -64,6 +82,10 @@ const BPGame = (() => {
       if (BP_POIS.filter(p => p.module === m.id).every(p => profile.visited.includes(p.id))) grant('mod-' + m.id);
     });
     if (profile.visited.length >= BP_POIS.length) grant('all');
+    /* v40 连击徽章 */
+    const st = getStreak();
+    if (st >= 3) grant('streak3');
+    if (st >= 7) grant('streak7');
     save();
     return fresh;
   }
@@ -75,6 +97,10 @@ const BPGame = (() => {
     const grant = (id) => { if (!earned(id)) { profile.badges.push(id); fresh.push(id); } };
     if (score >= Math.ceil(total * 0.6)) grant('quiz60');
     if (score === total) grant('quiz10');
+    /* v40 连击徽章 */
+    const st = getStreak();
+    if (st >= 3) grant('streak3');
+    if (st >= 7) grant('streak7');
     save();
     return fresh;
   }
@@ -166,7 +192,7 @@ const BPGame = (() => {
 
   return {
     load, markVisited, markQuiz, markRandom, markPuzzle, dailyPoi, startQuiz, answerQuiz, nextQuiz,
-    toggleFav, isFav,
+    toggleFav, isFav, getStreak,
     get profile() { return profile; },
     get badges() { return badgeDef(); },
     get quizState() { return quiz; },

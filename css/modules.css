@@ -251,3 +251,13 @@
 
 /* v22-c 学习报告导出按钮行 */
 .ins-foot { display: flex; justify-content: flex-end; margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(122,178,214,0.15); }
+
+/* v40 看板打卡热力图（深色版） */
+.ins-heat-title { font-size: 11px; color: var(--c-text-dim, #9FB6C9); margin: 10px 0 0; letter-spacing: 1px; }
+.ins-heat { display: flex; gap: 3px; margin: 6px 0 2px; overflow-x: auto; padding-bottom: 4px; }
+.ins-hcol { display: flex; flex-direction: column; gap: 3px; }
+.ins-hc { width: 10px; height: 10px; border-radius: 2px; background: rgba(122,178,214,.12); flex: 0 0 auto; }
+.ins-hc.lv1 { background: rgba(94,201,143,.35); }
+.ins-hc.lv2 { background: rgba(94,201,143,.65); }
+.ins-hc.lv3 { background: #5ec98f; }
+.ins-quiz-best b { color: #ffd97a; }

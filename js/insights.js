@@ -63,6 +63,27 @@ const BPInsights = (() => {
     });
   }
 
+  /* v40 热力网格数据（看板与网页版报告共用）：weeks 周 × 7 天，
+     周一为一周起点；lv 0/1(1-2次)/2(3-4次)/3(5+次)；future=未来日期 */
+  function heatGridData(days, weeks) {
+    const DAY = 86400000;
+    const end = new Date(); end.setHours(0, 0, 0, 0);
+    const dow = (end.getDay() + 6) % 7;   // 周一=0 … 周日=6
+    const startT = end.getTime() - (weeks * 7 - 1 - dow) * DAY;
+    const cols = [];
+    for (let w = 0; w < weeks; w++) {
+      const col = [];
+      for (let d = 0; d < 7; d++) {
+        const t = new Date(startT + (w * 7 + d) * DAY);
+        const key = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
+        const n = days[key] || 0;
+        col.push({ key, n, lv: n === 0 ? 0 : n <= 2 ? 1 : n <= 4 ? 2 : 3, future: t > end });
+      }
+      cols.push(col);
+    }
+    return cols;
+  }
+
   /* v21 学习进度仪表板 */
   function renderProgress(container) {
     const visited = (typeof BPGame !== 'undefined' && BPGame.profile) ? BPGame.profile.visited : [];
@@ -93,6 +114,19 @@ const BPInsights = (() => {
     if (wrongN) html += `<div class="ins-quiz-best">📕 待攻克错题：${wrongN} 道（闯关里可重练）</div>`;
     const favN = prof ? (prof.favs || []).length : 0;
     if (favN) html += `<div class="ins-quiz-best">⭐ 已收藏：${favN} 个知识点</div>`;
+    /* v40 连击 + 看板热力图（深色版网格） */
+    if (prof) {
+      const st = (typeof BPGame.getStreak === 'function') ? BPGame.getStreak() : 0;
+      html += st > 0
+        ? `<div class="ins-quiz-best">🔥 连击中：已连续 <b>${st}</b> 天打卡</div>`
+        : `<div class="ins-quiz-best">🔥 今天还没打卡，点亮一个知识点开始连击吧</div>`;
+      const grid = heatGridData(prof.days || {}, 16);
+      html += `<div class="ins-heat-title">打卡热力图（近 16 周）</div><div class="ins-heat">` +
+        grid.map(col => '<span class="ins-hcol">' + col.map(c =>
+          `<i class="ins-hc lv${c.lv}"${c.future ? ' style="opacity:.15"' : ''} title="${c.key} · ${c.n} 次"></i>`
+        ).join('') + '</span>').join('') +
+        `</div>`;
+    }
     box.innerHTML = html;
     container.prepend(box);
   }
@@ -194,24 +228,14 @@ const BPInsights = (() => {
 
     /* v39 打卡热力图：近 16 周 GitHub 风格网格（数据源 profile.days，v39 起记录） */
     const days = pf.days || {};
-    const DAY = 86400000;
-    const end = new Date(); end.setHours(0, 0, 0, 0);
-    const dow = (end.getDay() + 6) % 7;   // 周一=0 … 周日=6
-    const HEAT_WEEKS = 16;
-    const start = new Date(end.getTime() - (HEAT_WEEKS * 7 - 1 - dow) * DAY);
     let heatCols = '', activeDays = 0;
-    for (let w = 0; w < HEAT_WEEKS; w++) {
-      let col = '';
-      for (let d = 0; d < 7; d++) {
-        const t = new Date(start.getTime() + (w * 7 + d) * DAY);
-        const key = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
-        const n = days[key] || 0;
-        if (n > 0) activeDays++;
-        const lv = n === 0 ? 0 : n <= 2 ? 1 : n <= 4 ? 2 : 3;
-        const dim = t > end ? ' style="opacity:.18"' : '';
-        col += `<i class="hc lv${lv}"${dim} title="${key} · ${n} 次"></i>`;
+    for (const col of heatGridData(days, 16)) {
+      let cell = '';
+      for (const c of col) {
+        if (c.n > 0) activeDays++;
+        cell += `<i class="hc lv${c.lv}"${c.future ? ' style="opacity:.18"' : ''} title="${c.key} · ${c.n} 次"></i>`;
       }
-      heatCols += `<span class="hcol">${col}</span>`;
+      heatCols += `<span class="hcol">${cell}</span>`;
     }
 
     const favList = (pf.favs || []).map(id => BP_POIS.find(p => p.id === id)).filter(Boolean);
