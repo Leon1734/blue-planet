@@ -203,7 +203,14 @@ const BPGame = (() => {
     quiz.idx++;
     if (quiz.idx >= quiz.qs.length) {
       /* v41 每日五题成绩（markQuiz 内部会 save，一并落盘） */
-      if (quiz.daily) profile.daily = { date: dayKey(), score: quiz.score, total: quiz.qs.length };
+      if (quiz.daily) {
+        profile.daily = { date: dayKey(), score: quiz.score, total: quiz.qs.length };
+        /* v43 成绩轨迹：留最近 120 天，选择器画 7 天小圆点 */
+        profile.dailyLog = profile.dailyLog || {};
+        profile.dailyLog[dayKey()] = { s: quiz.score, t: quiz.qs.length };
+        const keys = Object.keys(profile.dailyLog).sort();
+        while (keys.length > 120) delete profile.dailyLog[keys.shift()];
+      }
       const fresh = markQuiz(quiz.score, quiz.qs.length);
       const result = { done: true, score: quiz.score, total: quiz.qs.length, fresh,
         moduleId: quiz.moduleId, wrongMode: quiz.wrongMode, daily: quiz.daily,

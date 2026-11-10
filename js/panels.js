@@ -270,19 +270,35 @@ const BPPanels = (() => {
     $('quizModal').classList.remove('hidden');
     renderQuizPicker();
   }
+  /* v43 从「今日地球」卡直达每日五题 */
+  function openDailyQuiz() {
+    $('quizModal').classList.remove('hidden');
+    if (typeof BPGame.startDaily === 'function') BPGame.startDaily();
+    renderQuiz();
+  }
   function renderQuizPicker() {
     const box = $('quizBody');
     const counts = {};
     BP_QUIZ.forEach(q => { counts[q.m] = (counts[q.m] || 0) + 1; });
     const chips = [{ id: '', name: '🌍 全部混抽', color: '#E8F1F8', n: BP_QUIZ.length }]
       .concat(BP_MODULES.map(m => ({ id: m.id, name: m.name, color: m.color, n: counts[m.id] || 0 })));
-    /* v41 每日五题入口（置顶） */
+    /* v41 每日五题入口（置顶）+ v43 近 7 天成绩轨迹 */
     const ds = (typeof BPGame.dailyState === 'function') && BPGame.dailyState();
     const now = new Date();
     const mmdd = `${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const log = BPGame.profile.dailyLog || {};
+    let trail = '<span class="daily-trail">';
+    for (let i = 6; i >= 0; i--) {
+      const t = new Date(Date.now() - i * 86400000);
+      const k = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
+      const e = log[k];
+      const cls = !e ? 'off' : (e.s === e.t ? 'full' : 'done');
+      trail += `<i class="dt-dot ${cls}" title="${k} · ${e ? e.s + '/' + e.t : '缺卡'}"></i>`;
+    }
+    trail += '</span>';
     box.innerHTML =
       `<div class="quiz-wrong-row" style="margin:0 0 12px">
-        <button class="chip-btn ${ds ? '' : 'on'}" id="quizDailyGo">📝 每日五题 · ${mmdd}${ds ? `（今日已完成 ${ds.score}/${ds.total}）` : '（全网同题 · 5 道）'}</button>
+        <button class="chip-btn ${ds ? '' : 'on'}" id="quizDailyGo">📝 每日五题 · ${mmdd}${ds ? `（今日已完成 ${ds.score}/${ds.total}）` : '（全网同题 · 5 道）'}</button>${trail}
       </div>` +
       `<div class="quiz-pick-title">🎯 选择挑战范围</div>` +
       `<div class="quiz-pick-sub">每个范围随机 10 题，答完看解析</div>` +
@@ -647,7 +663,7 @@ const BPPanels = (() => {
   }
 
   return {
-    init, toast, closeModal, openBadges, openQuiz, openInsights,
+    init, toast, closeModal, openBadges, openQuiz, openDailyQuiz, openInsights,
     openEpochAt,
     get selectApi() { return api; },
   };

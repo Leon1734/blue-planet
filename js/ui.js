@@ -362,6 +362,21 @@ const BPUI = (() => {
     });
     showFact();
     $('factNext').addEventListener('click', showFact);
+    /* v43 每日五题快捷入口：状态随打卡事件刷新，点击直达答题
+       （id 用 dailyQuizGo——dailyGo 已被「今日推荐」按钮占用） */
+    const dg = $('dailyQuizGo');
+    if (dg) {
+      const refreshDailyChip = () => {
+        const ds = (typeof BPGame !== 'undefined' && BPGame.dailyState) ? BPGame.dailyState() : null;
+        dg.textContent = ds ? `📝 今日已完成 ${ds.score}/${ds.total}` : '📝 每日五题';
+        dg.classList.toggle('on', !ds);
+      };
+      refreshDailyChip();
+      window.addEventListener('bp-activity', refreshDailyChip);
+      dg.addEventListener('click', () => {
+        if (typeof BPPanels !== 'undefined' && BPPanels.openDailyQuiz) BPPanels.openDailyQuiz();
+      });
+    }
     /* v33 冷知识明信片 */
     const fpc = $('factPc');
     if (fpc) fpc.addEventListener('click', () => {

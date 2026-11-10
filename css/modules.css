@@ -261,3 +261,10 @@
 .ins-hc.lv2 { background: rgba(94,201,143,.65); }
 .ins-hc.lv3 { background: #5ec98f; }
 .ins-quiz-best b { color: #ffd97a; }
+
+/* v43 每日五题入口行与近 7 天成绩轨迹 */
+.daily-row { margin: 2px 0 6px; }
+.daily-trail { margin-left: 8px; display: inline-flex; gap: 4px; vertical-align: middle; }
+.dt-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(122,178,214,.22); display: inline-block; }
+.dt-dot.done { background: #5ec98f; }
+.dt-dot.full { background: #ffd24a; box-shadow: 0 0 6px rgba(255,210,74,.55); }
