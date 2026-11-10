@@ -47,7 +47,13 @@ const BPPostcard = (() => {
     ctx.fillStyle = '#0D1B2A';
     ctx.fillRect(0, 0, W, H);
     const imgH = Math.round(H * 0.72);
-    const gl = document.getElementById('scene');
+    let gl = document.getElementById('scene');
+    /* 遮挡期画布可能被初始化成 1×1：先重建视口再补渲一帧，避免快照空白 */
+    if (gl && gl.width <= 2 && typeof BPScene !== 'undefined') {
+      if (BPScene.resize) BPScene.resize();
+      if (BPScene.render) BPScene.render();
+      gl = document.getElementById('scene');
+    }
     if (gl && gl.width > 2) {
       const scale = Math.max(W / gl.width, imgH / gl.height);
       const dw = gl.width * scale, dh = gl.height * scale;
@@ -303,5 +309,68 @@ const BPPostcard = (() => {
     }
   }
 
-  return { make, makeFact, makeEpoch };
+  /* v44 每日五题成绩卡：金色描边 + 大分数 + 连击上下文 + 站址二维码 */
+  function makeDaily(score, total) {
+    try {
+      if (typeof BPScene !== 'undefined') BPScene.render();
+      const c = document.createElement('canvas');
+      c.width = W; c.height = H;
+      const ctx = c.getContext('2d');
+      const imgH = drawShell(ctx, '#FFD24A');
+
+      const d = new Date();
+      const mmdd = `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+      /* 胶囊：每日五题 · 日期（信息区需整体收在页脚分隔线上方） */
+      let y = imgH + 44;
+      ctx.font = '500 26px "Microsoft YaHei","PingFang SC",sans-serif';
+      const label = `📝 每日五题 · ${mmdd}`;
+      const pillW = ctx.measureText(label).width + 48;
+      ctx.strokeStyle = '#FFD24A';
+      ctx.lineWidth = 2.5;
+      pill(ctx, 64, y, pillW, 50, 25); ctx.stroke();
+      ctx.fillStyle = '#FFD24A';
+      ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+      ctx.fillText(label, 64 + 24, y + 26);
+
+      /* 大分数（满分金色） */
+      y += 50;
+      ctx.textBaseline = 'alphabetic';
+      ctx.font = '700 116px "Microsoft YaHei","PingFang SC",sans-serif';
+      ctx.fillStyle = score === total ? '#FFD24A' : '#F2F8FD';
+      ctx.fillText(String(score), 64, y + 116);
+      const sw = ctx.measureText(String(score)).width;
+      ctx.font = '400 56px "Microsoft YaHei","PingFang SC",sans-serif';
+      ctx.fillStyle = '#7D97AD';
+      ctx.fillText(`/ ${total}`, 64 + sw + 16, y + 112);
+
+      /* 评语 + 连击同行（一行放下，避免压到页脚） */
+      y += 156;
+      const ratio = total ? score / total : 0;
+      const verdict = score === total ? '🏆 满分！今天的地理之星'
+        : ratio >= 0.6 ? '🎉 稳扎稳打，明天再来五道' : '📖 多转转地球，明天再战';
+      ctx.font = '600 30px "Microsoft YaHei","PingFang SC",sans-serif';
+      ctx.fillStyle = '#F2F8FD';
+      ctx.fillText(verdict, 64, y + 6);
+      if (typeof BPGame !== 'undefined' && BPGame.getStreak) {
+        const st = BPGame.getStreak();
+        if (st > 1) {
+          ctx.font = '400 22px "Microsoft YaHei","PingFang SC",sans-serif';
+          ctx.fillStyle = '#FFC9A0';
+          ctx.fillText(`🔥 连续 ${st} 天打卡`, 64 + ctx.measureText(verdict).width + 280, y + 6);
+        }
+      }
+
+      /* 二维码 + 页脚 */
+      stampQR(ctx, SITE);
+      drawFooter(ctx);
+      download(ctx, `蓝色星球_每日五题_${mmdd}.png`);
+      return true;
+    } catch (e) {
+      if (typeof BPPanels !== 'undefined' && BPPanels.toast) BPPanels.toast('📷 生成失败：' + (e.message || '画布不可用'));
+      return false;
+    }
+  }
+
+  return { make, makeFact, makeEpoch, makeDaily };
 })();

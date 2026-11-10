@@ -387,7 +387,7 @@ const BPPanels = (() => {
         ${dailyLine}
         <div class="quiz-best">历史最佳：${BPGame.profile.quizBest} 分</div>
         <div class="quiz-actions">
-          ${res.daily ? `<button class="chip-btn" id="quizDailyShare">📋 复制成绩</button>` : ''}
+          ${res.daily ? `<button class="chip-btn" id="quizDailyCard">🖼 成绩卡</button><button class="chip-btn" id="quizDailyShare">📋 复制成绩</button>` : ''}
           ${res.moduleId && !res.wrongMode ? `<button class="chip-btn" id="quizAgainMod">再战本模块</button>` : ''}
           <button class="chip-btn" id="quizAgain">换个范围</button>
           <button class="chip-btn warn" id="quizClose2">关闭</button>
@@ -395,6 +395,10 @@ const BPPanels = (() => {
       </div>`;
     const am = $('quizAgainMod');
     if (am) am.addEventListener('click', () => { BPGame.startQuiz(res.moduleId); renderQuiz(); });
+    const dc = $('quizDailyCard');
+    if (dc) dc.addEventListener('click', () => {
+      if (typeof BPPostcard !== 'undefined' && BPPostcard.makeDaily) BPPostcard.makeDaily(res.score, res.total);
+    });
     const ds = $('quizDailyShare');
     if (ds) ds.addEventListener('click', () => {
       const d = new Date();

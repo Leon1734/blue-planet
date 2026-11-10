@@ -251,6 +251,8 @@
   display: inline-block; width: 8px; height: 8px; border-radius: 50%;
   margin-right: 5px; vertical-align: middle;
 }
+/* v44 已点亮小勾 */
+.rel-visit { color: #5ec98f; margin-right: 4px; font-style: normal; font-weight: 700; }
 
 /* ---------- v20 AI 配图 ---------- */
 .ai-loading { font-size: 11px; color: var(--c-text-dim); padding: 6px 0; }

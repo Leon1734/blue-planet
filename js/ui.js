@@ -163,14 +163,17 @@ const BPUI = (() => {
         .slice(0, 3)
         .map(o => o.x);
       let html = '';
+      /* v44 已点亮的知识点在推荐链接前打绿色小勾 */
+      const mark = (id) => (typeof BPGame !== 'undefined' && BPGame.profile &&
+        BPGame.profile.visited.includes(id)) ? '<i class="rel-visit">✓</i>' : '';
       if (sibs.length) {
         html += '<div class="card-rel-title">📍 同模块</div>' + sibs.map(r =>
-          `<button class="card-rel-link" data-poi="${r.id}">${r.title} →</button>`).join('');
+          `<button class="card-rel-link" data-poi="${r.id}">${mark(r.id)}${r.title} →</button>`).join('');
       }
       if (cross.length) {
         html += '<div class="card-rel-title">🔗 跨模块知识网</div>' + cross.map(r => {
           const rm = BP_MODULES.find(m => m.id === r.module);
-          return `<button class="card-rel-link" data-poi="${r.id}"><i class="rel-dot" style="background:${rm ? rm.color : '#8FC8E8'}"></i>${r.title} →</button>`;
+          return `<button class="card-rel-link" data-poi="${r.id}"><i class="rel-dot" style="background:${rm ? rm.color : '#8FC8E8'}"></i>${mark(r.id)}${r.title} →</button>`;
         }).join('');
       }
       relBox.innerHTML = html;
